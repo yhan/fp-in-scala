@@ -3,6 +3,8 @@ package tests {
   import collections.List2
   import org.scalatest.FunSuite
 
+
+
   class ListShould extends FunSuite {
     test("Can remove the first element of list then return it") {
       val expected = List2[String]("world", "bonjour", "salut")
@@ -75,7 +77,7 @@ package tests {
       val source = List2[Int](100, 12, 41, 42, 1, 5, 4, 16, 88)
       val expected = List2[Int](1, 5, 4, 16, 88)
 
-      val filtered = List2.dropWhile(source, (x: Int) => x > 10)
+      val filtered = List2.dropWhile(source)(x => x > 10)
       assert(expected == filtered)
     }
 

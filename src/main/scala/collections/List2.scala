@@ -10,21 +10,31 @@ case class Cons[+A](head: A, tail: List2[A]) extends List2[A]
 object List2 {
 
   // Build a new list from 'source', using all its elements excluding the last one.
+  // length of source M: complexity = O(M^2)
   def init[A](source: List2[A]): List2[A] = {
     val newOne = List2[A]()
 
-    @scala.annotation.tailrec def loop(src: List2[A], buffer: List2[A]): List2[A] = src match {
+    @scala.annotation.tailrec
+    def loop(src: List2[A], buffer: List2[A]): List2[A] = src match {
       case Nil => Nil
       case Cons(head, tail) => if (tail == Nil) {
         return buffer
-      } else {
-        loop(tail, append(buffer, List2[A] { head }))
-      }
+      } else loop(tail, append(buffer, List2[A] {  head  }))
     }
 
     loop(source, newOne)
   }
 
+
+  def initRecursiveUsingFrames[A](l: List2[A]): List2[A] = l match {
+    case Nil => sys.error("init of empty list")
+    case Cons(_, Nil) => Nil
+    case Cons(h, t) => Cons(h, init(t))
+  }
+
+
+  // length of a1=M, a2=N
+  // complexity O(M)
   def append[A](a1: List2[A], a2: List2[A]): List2[A] = a1 match {
     case Nil => a2
     case Cons(h, t) => Cons(h, append(t, a2))
@@ -33,6 +43,38 @@ object List2 {
   def sum(ints: List2[Int]): Int = ints match {
     case Nil => 0
     case Cons(x, xs) => x + sum(xs)
+  }
+
+  def sum2(ints: List2[Int]): Int = {
+    foldRight(ints, 0)((x, y) => x + y)
+  }
+
+  /**
+   * foldRight just represent a recursion structure
+   * */
+  def foldRight[A, B](as: List2[A], z: B)(f: (A, B) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+  }
+
+  /**
+   * EXERCISE 3.7
+   * Can product, implemented using foldRight, immediately halt the recursion and
+   * return 0.0 if it encounters a 0.0? Why or why not? Consider how any short-circuiting
+   * might work if you call foldRight with a large list. This is a deeper question that we’ll
+   * return to in chapter 5.*/
+  def foldRightWithCircuitBreaker[A, B](as: List2[A], z: B, broken: B)(f: (A, B) => B)(circuit: A => Boolean): B = as match {
+    case Nil => z
+    case Cons(x, xs) => {
+      if(circuit(x)) return broken
+      else {
+        f(x, foldRight(xs, z)(f))
+      }
+    }
+  }
+
+  def product2(ds: List2[Double]): Double = {
+    foldRightWithCircuitBreaker(ds, 1.0, 0.0)((x, y) => x * y)( d => d == 0)
   }
 
   def product(ds: List2[Double]): Double = ds match {
@@ -85,12 +127,16 @@ object List2 {
     case Cons(_, t) => drop(t, n - 1)
   }
 
-  @scala.annotation.tailrec def dropWhile[A](l: List2[A], f: A => Boolean): List2[A] = l match {
+  /**
+   * Curried
+   * ============================
+   * a function of two arguments can be represented as a function that
+   * accepts one argument and returns another function of one argument.
+   **/
+  @scala.annotation.tailrec def dropWhile[A](l: List2[A])(f: A => Boolean): List2[A] = l match {
     case Cons(x, xs) => {
-      if (f(x)) dropWhile(xs, f) else l
+      if (f(x)) dropWhile(xs)(f) else l
     }
     case Nil => Nil
   }
-
-
 }
