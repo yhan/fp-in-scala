@@ -1,4 +1,4 @@
-import scala.annotation.tailrec
+package collections
 
 sealed trait List2[+A]
 
@@ -8,6 +8,28 @@ case class Cons[+A](head: A, tail: List2[A]) extends List2[A]
 
 
 object List2 {
+
+  // Build a new list from 'source', using all its elements excluding the last one.
+  def init[A](source: List2[A]): List2[A] = {
+    val newOne = List2[A]()
+
+    @scala.annotation.tailrec def loop(src: List2[A], buffer: List2[A]): List2[A] = src match {
+      case Nil => Nil
+      case Cons(head, tail) => if (tail == Nil) {
+        return buffer
+      } else {
+        loop(tail, append(buffer, List2[A] { head }))
+      }
+    }
+
+    loop(source, newOne)
+  }
+
+  def append[A](a1: List2[A], a2: List2[A]): List2[A] = a1 match {
+    case Nil => a2
+    case Cons(h, t) => Cons(h, append(t, a2))
+  }
+
   def sum(ints: List2[Int]): Int = ints match {
     case Nil => 0
     case Cons(x, xs) => x + sum(xs)
@@ -38,9 +60,8 @@ object List2 {
 
   /**
    * Drop the the first N elements*/
-
   def drop[A](l: List2[A], removeCount: Int): List2[A] = {
-    def inner[A](temp: List2[A], count: Int): List2[A] = temp match {
+    @scala.annotation.tailrec def inner[A](temp: List2[A], count: Int): List2[A] = temp match {
       case Cons(x, xs) => {
         if (count < removeCount) inner(xs, count + 1) else temp
       }
@@ -51,7 +72,7 @@ object List2 {
   }
 
 
-  def drop2[A](l: List2[A], removeCount: Int): List2[A] = l match {
+  @scala.annotation.tailrec def drop2[A](l: List2[A], removeCount: Int): List2[A] = l match {
     case Cons(x, xs) => {
       if (removeCount > 0) drop2(xs, removeCount - 1) else l
     }
@@ -59,17 +80,17 @@ object List2 {
   }
 
 
-  def drop3[A](l: List2[A], n: Int): List2[A] =
-    if (n <= 0) l
-    else l match {
-      case Nil => Nil
-      case Cons(_,t) => drop(t, n-1)
-    }
+  def drop3[A](l: List2[A], n: Int): List2[A] = if (n <= 0) l else l match {
+    case Nil => Nil
+    case Cons(_, t) => drop(t, n - 1)
+  }
 
-  @tailrec def dropWhile[A](l: List2[A], f: A => Boolean): List2[A] = l match {
+  @scala.annotation.tailrec def dropWhile[A](l: List2[A], f: A => Boolean): List2[A] = l match {
     case Cons(x, xs) => {
       if (f(x)) dropWhile(xs, f) else l
     }
     case Nil => Nil
   }
+
+
 }
