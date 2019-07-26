@@ -31,4 +31,25 @@ class FoldShould extends FunSuite {
      assertResult(3)(length)
    }
 
+  test("Length of list using left fold") {
+    val list = List[Int](1, 2, 3)
+    val length = List.lengthLeftFold(list)
+
+    assertResult(3)(length)
+  }
+
+  test( "Sum list using left fold"){
+    val list = List[Int](1, 2, 3)
+    val sum = List.sumLeftFold(list)
+
+    assertResult(6)(sum)
+  }
+
+  test( "Product all int elements of list using left fold"){
+    val list = List[Int](1, 2, 3, 4)
+    val product = List.productLeftFold(list)
+
+    assertResult(24)(product)
+  }
+
 }

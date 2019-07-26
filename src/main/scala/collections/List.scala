@@ -8,6 +8,9 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+  def productLeftFold(list: List[Int]) :Int ={
+    foldLeft(list, 1)(_*_)
+  }
 
 
   // Build a new list from 'source', using all its elements excluding the last one.
@@ -47,16 +50,32 @@ object List {
   }
 
   def sum2(ints: List[Int]): Int = {
-    foldRight(ints, 0)((x, y) => x + y)
+    foldRight(ints, 0)(_+_)
   }
 
   /**
    * foldRight just represent a recursion structure
    * */
+//  @scala.annotation.tailrec => not tail recursion
   def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
     case Nil => z
     case Cons(x, xs) => f(x, foldRight(xs, z)(f))
   }
+
+  @scala.annotation.tailrec
+  def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  }
+
+  def sumLeftFold(list: List[Int]) : Int = {
+    return foldLeft(list, 0)(_+_)
+  }
+
+  def lengthLeftFold[A](list: List[A]) : Int = {
+    foldLeft(list, 0)((y, _) =>  y + 1)
+  }
+
 
   def length[A](list: List[A]) : Int = {
     foldRight(list, 0)((_, xs) => 1 + xs)
@@ -64,6 +83,8 @@ object List {
 
 
   def selfConstructor(list : List[Int]) : List[Int] = {
+    //The type annotation Nil:List[Int] is needed here, because otherwise Scala infers the B type parameter in
+    //foldRight as List[Nothing].
     foldRight(list, Nil: List[Int])(Cons(_, _))
   }
 
