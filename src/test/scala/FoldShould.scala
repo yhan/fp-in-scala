@@ -72,4 +72,24 @@ class FoldShould extends FunSuite {
 
     assertResult(List[Int](1, 2, 3, 4, 9, 8, 7))(List.appendByFold(left, right))
   }
+
+  test ("Flatten list of lists: right fold"){
+    val l1 = List[Int](1, 2, 3, 4)
+    val l2 = List[Int](9, 8, 7)
+    val l3 = List[Int](42, 100, 300)
+    val listOfLists = List[List[Int]](l1, l2, l3)
+
+    assertResult(List[Int](1, 2, 3, 4, 9, 8, 7, 42, 100, 300))(List.flattenByRightFold(listOfLists))
+  }
+
+  test ("Flatten list of lists: left fold"){
+    val l1 = List[Int](1, 2, 3, 4)
+    val l2 = List[Int](9, 8, 7)
+    val l3 = List[Int](42, 100, 300)
+    val listOfLists = List[List[Int]](l1, l2, l3)
+
+    assertResult(List[Int](1, 2, 3, 4, 9, 8, 7, 42, 100, 300))(List.flattenByLeftFold(listOfLists))
+  }
 }
+
+
