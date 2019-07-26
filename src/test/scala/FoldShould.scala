@@ -24,12 +24,12 @@ class FoldShould extends FunSuite {
    * Compute the length of a list using foldRight.
    * def length[A](as: List[A]): Int
    **/
-   test("Length of list") {
-     val list = List[Int](1, 2, 3)
-     val length = List.length(list)
+  test("Length of list") {
+    val list = List[Int](1, 2, 3)
+    val length = List.length(list)
 
-     assertResult(3)(length)
-   }
+    assertResult(3)(length)
+  }
 
   test("Length of list using left fold") {
     val list = List[Int](1, 2, 3)
@@ -38,25 +38,38 @@ class FoldShould extends FunSuite {
     assertResult(3)(length)
   }
 
-  test( "Sum list using left fold"){
+  test("Sum list using left fold") {
     val list = List[Int](1, 2, 3)
     val sum = List.sumLeftFold(list)
 
     assertResult(6)(sum)
   }
 
-  test( "Product all int elements of list using left fold"){
+  test("Product all int elements of list using left fold") {
     val list = List[Int](1, 2, 3, 4)
     val product = List.productLeftFold(list)
 
     assertResult(24)(product)
   }
 
-  test ("Reverse list") {
+  test("Reverse list") {
     val list = List[Int](1, 2, 3, 4)
     val reversed = List.reverse(list)
 
-    assertResult(List[Int](4,3,2,1))(reversed)
+    assertResult(List[Int](4, 3, 2, 1))(reversed)
   }
 
+  test("Append") {
+    val first = List[Int](1, 2, 3, 4)
+    val second = List[Int](9, 8, 7)
+
+    assertResult(List[Int](1, 2, 3, 4, 9, 8, 7))(List.append(first, second))
+  }
+
+  test("Append using right fold") {
+    val left = List[Int](1, 2, 3, 4)
+    val right = List[Int](9, 8, 7)
+
+    assertResult(List[Int](1, 2, 3, 4, 9, 8, 7))(List.appendByFold(left, right))
+  }
 }

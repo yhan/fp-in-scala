@@ -1,5 +1,7 @@
 package collections
 
+import scala.annotation.tailrec
+
 sealed trait List[+A]
 
 case object Nil extends List[Nothing]
@@ -8,6 +10,25 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+  def appendByFold[A](left: List[A], right: List[A]): List[A] = {
+    foldRight(left, right)(Cons(_, _))
+  }
+
+  /**
+   * foldRight just represent an iteration structure
+   * */
+  //  @scala.annotation.tailrec => not tail recursion
+  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+  }
+  // length of a1=M, a2=N
+  // complexity O(M)
+  //  @tailrec  => Is not tail recursion
+  def append[A](a1: List[A], a2: List[A]): List[A] = a1 match {
+    case Nil => a2
+    case Cons(h, t) => Cons(h, append(t, a2))
+  }
 
   def reverse[A](list: List[A]) : List[A] = {
     foldLeft(list, Nil: List[A])((x, y) => Cons(y, x))
@@ -22,8 +43,6 @@ object List {
   def productLeftFold(list: List[Int]) :Int ={
     foldLeft(list, 1)(_*_)
   }
-
-
 
   // Build a new list from 'source', using all its elements excluding the last one.
   // length of source M: complexity = O(M^2)
@@ -48,14 +67,6 @@ object List {
     case Cons(h, t) => Cons(h, init(t))
   }
 
-
-  // length of a1=M, a2=N
-  // complexity O(M)
-  def append[A](a1: List[A], a2: List[A]): List[A] = a1 match {
-    case Nil => a2
-    case Cons(h, t) => Cons(h, append(t, a2))
-  }
-
   def sum(ints: List[Int]): Int = ints match {
     case Nil => 0
     case Cons(x, xs) => x + sum(xs)
@@ -65,14 +76,7 @@ object List {
     foldRight(ints, 0)(_+_)
   }
 
-  /**
-   * foldRight just represent a recursion structure
-   * */
-//  @scala.annotation.tailrec => not tail recursion
-  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-    case Nil => z
-    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-  }
+
 
 
   def sumLeftFold(list: List[Int]) : Int = {
