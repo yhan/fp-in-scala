@@ -1,5 +1,7 @@
 package collections
 
+import scala.annotation.tailrec
+
 sealed trait List[+A]
 
 case object Nil extends List[Nothing]
@@ -8,12 +10,38 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
-  def map[A, B](list: List[A])(convert: A => B) : List[B] =  list match {
-    case Nil => Nil
-    case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
-  }
 
-  def appendByFold[A](left: List[A], right: List[A]): List[A] = {
+    def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
+        case Nil => Nil
+        case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
+    }
+
+    def map2[A, B](list: List[A])(convert: A => B): List[B] = {
+        foldRight(list, Nil: List[B])((x, xs) => Cons(convert(x), xs))
+    }
+
+    def map3[A, B](list: List[A])(convert: A => B): List[B] = {
+        foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
+    }
+
+    /**
+     * Represent an recursion structure
+     **/
+    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+        case Nil => z
+        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+
+    /**
+     * Represent an iteration structure
+     **/
+    @scala.annotation.tailrec
+    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+        case Nil => z
+        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+
+    def appendByFold[A](left: List[A], right: List[A]): List[A] = {
         foldRight(left, right)(Cons(_, _))
     }
 
@@ -26,23 +54,6 @@ object List {
         foldLeft(listOfLists, Nil: List[A])(appendByFold)
     }
 
-    /**
-     * Represent an recursion structure
-     **/
-    //  @scala.annotation.tailrec => not tail recursion
-    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-        case Nil => z
-        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }
-
-  /**
-   * Represent an iteration structure
-   * */
-    @scala.annotation.tailrec
-    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-        case Nil => z
-        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
-    }
 
     // length of a1=M, a2=N
     // complexity O(M)

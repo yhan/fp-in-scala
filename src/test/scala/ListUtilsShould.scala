@@ -4,7 +4,7 @@ import org.scalatest.FunSuite
 class ListUtilsShould extends FunSuite {
     test("Can add 1 for each element of list") {
         val list = List[Int](1, 2, 3, 4)
-        val incremented = List.map(list)(_ + 1)
+        val incremented = List.map2(list)(_ + 1)
         assertResult(List[Int](2, 3, 4, 5))(incremented)
     }
 
@@ -16,6 +16,6 @@ class ListUtilsShould extends FunSuite {
     test("Convert double to string"){
         val list = List[Double](1, 2, 3, 4)
         val asStrings =  List[String]("1.0", "2.0", "3.0", "4.0")
-        assertResult(asStrings)( List.map(list)(convert = (x: Double) => x.toString))
+        assertResult(asStrings)( List.map2(list)(convert = (x: Double) => x.toString))
     }
 }
