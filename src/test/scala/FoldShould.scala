@@ -52,9 +52,16 @@ class FoldShould extends FunSuite {
     assertResult(24)(product)
   }
 
-  test ("Reverse list") {
+  test ("Reverse list using left fold") {
     val list = List[Int](1, 2, 3, 4)
-    val reversed = List.reverse(list)
+    val reversed = List.reverseLeftFold(list)
+
+    assertResult(List[Int](4,3,2,1))(reversed)
+  }
+
+  test ("Reverse list using right fold") {
+    val list = List[Int](1, 2, 3, 4)
+    val reversed = List.reverseRightFold(list)
 
     assertResult(List[Int](4,3,2,1))(reversed)
   }

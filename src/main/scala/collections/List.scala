@@ -6,48 +6,56 @@ case object Nil extends List[Nothing]
 
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
-
 object List {
+  /**
+   * foldRight just represent a recursion structure
+   **/
+  //  @scala.annotation.tailrec => not tail recursion
+  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+  }
 
-  def reverse[A](list: List[A]) : List[A] = {
-    foldLeft(list, Nil: List[A])((x, y) => Cons(y, x))
+  def reverseLeftFold[A](list: List[A]): List[A] = {
+    foldLeft(list, Nil: List[A])((xs, x) => Cons(x, xs))
   }
 
   @scala.annotation.tailrec
-  def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-    case Nil => z
-    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+    case Nil => {
+      z
+    }
+    case Cons(x, xs) => {
+      foldLeft(xs, f(z, x))(f)
+    }
   }
 
-  def productLeftFold(list: List[Int]) :Int ={
-    foldLeft(list, 1)(_*_)
+  def productLeftFold(list: List[Int]): Int = {
+    foldLeft(list, 1)(_ * _)
   }
-
-
 
   // Build a new list from 'source', using all its elements excluding the last one.
   // length of source M: complexity = O(M^2)
   def init[A](source: List[A]): List[A] = {
     val newOne = List[A]()
 
-    @scala.annotation.tailrec
-    def loop(src: List[A], buffer: List[A]): List[A] = src match {
+    @scala.annotation.tailrec def loop(src: List[A], buffer: List[A]): List[A] = src match {
       case Nil => Nil
       case Cons(head, tail) => if (tail == Nil) {
         return buffer
-      } else loop(tail, append(buffer, List[A] {  head  }))
+      } else loop(tail, append(buffer, List[A] {
+        head
+      }))
     }
 
     loop(source, newOne)
   }
-
 
   def initRecursiveUsingFrames[A](l: List[A]): List[A] = l match {
     case Nil => sys.error("init of empty list")
     case Cons(_, Nil) => Nil
     case Cons(h, t) => Cons(h, init(t))
   }
-
 
   // length of a1=M, a2=N
   // complexity O(M)
@@ -62,34 +70,23 @@ object List {
   }
 
   def sum2(ints: List[Int]): Int = {
-    foldRight(ints, 0)(_+_)
-  }
-
-  /**
-   * foldRight just represent a recursion structure
-   * */
-//  @scala.annotation.tailrec => not tail recursion
-  def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-    case Nil => z
-    case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    foldRight(ints, 0)(_ + _)
   }
 
 
-  def sumLeftFold(list: List[Int]) : Int = {
-    return foldLeft(list, 0)(_+_)
+  def sumLeftFold(list: List[Int]): Int = {
+    return foldLeft(list, 0)(_ + _)
   }
 
-  def lengthLeftFold[A](list: List[A]) : Int = {
-    foldLeft(list, 0)((y, _) =>  y + 1)
+  def lengthLeftFold[A](list: List[A]): Int = {
+    foldLeft(list, 0)((y, _) => y + 1)
   }
 
-
-  def length[A](list: List[A]) : Int = {
+  def length[A](list: List[A]): Int = {
     foldRight(list, 0)((_, xs) => 1 + xs)
   }
 
-
-  def selfConstructor(list : List[Int]) : List[Int] = {
+  def selfConstructor(list: List[Int]): List[Int] = {
     //The type annotation Nil:List[Int] is needed here, because otherwise Scala infers the B type parameter in
     //foldRight as List[Nothing].
     foldRight(list, Nil: List[Int])(Cons(_, _))
@@ -104,15 +101,14 @@ object List {
   def foldRightWithCircuitBreaker[A, B](as: List[A], z: B, broken: B)(f: (A, B) => B)(circuit: A => Boolean): B = as match {
     case Nil => z
     case Cons(x, xs) => {
-      if(circuit(x)) return broken
-      else {
+      if (circuit(x)) return broken else {
         f(x, foldRight(xs, z)(f))
       }
     }
   }
 
   def product2(ds: List[Double]): Double = {
-    foldRightWithCircuitBreaker(ds, 1.0, 0.0)((x, y) => x * y)( d => d == 0)
+    foldRightWithCircuitBreaker(ds, 1.0, 0.0)((x, y) => x * y)(d => d == 0)
   }
 
   def product(ds: List[Double]): Double = ds match {
@@ -158,7 +154,6 @@ object List {
     }
     case _ => l
   }
-
 
   def drop3[A](l: List[A], n: Int): List[A] = if (n <= 0) l else l match {
     case Nil => Nil
