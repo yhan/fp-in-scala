@@ -1,10 +1,10 @@
-import collections.List2
+import collections.List
 import org.scalatest.FunSuite
 
 class FoldShould extends FunSuite {
 
   test("Can circuit cut product") {
-    val product = List2.product2(List2(1.2, 2, 5.8, 9.7, 0, 15, 42, 142))
+    val product = List.product2(List(1.2, 2, 5.8, 9.7, 0, 15, 42, 142))
     assertResult(0.0)(product)
   }
 
@@ -14,9 +14,21 @@ class FoldShould extends FunSuite {
    * says about the relationship between foldRight and the data constructors of List?
    **/
   test("Can fold as constructor") {
-    val list = List2[Int](1, 2, 3)
-    val actual = List2.selfConstructor(list)
+    val list = List[Int](1, 2, 3)
+    val actual = List.selfConstructor(list)
 
     assertResult(list)(actual)
   }
+
+  /**
+   * Compute the length of a list using foldRight.
+   * def length[A](as: List[A]): Int
+   **/
+   test("Length of list") {
+     val list = List[Int](1, 2, 3)
+     val length = List.length(list)
+
+     assertResult(3)(length)
+   }
+
 }
