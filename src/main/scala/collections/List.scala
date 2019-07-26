@@ -8,9 +8,9 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
-  def incrementByOne[A](list: List[A]) (increment: A => A) : List[A] =  list match {
+  def map[A, B](list: List[A])(convert: A => B) : List[B] =  list match {
     case Nil => Nil
-    case Cons(x, xs) => Cons(increment(x), incrementByOne(xs)(increment))
+    case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
   }
 
   def appendByFold[A](left: List[A], right: List[A]): List[A] = {

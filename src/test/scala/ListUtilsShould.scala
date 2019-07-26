@@ -4,7 +4,18 @@ import org.scalatest.FunSuite
 class ListUtilsShould extends FunSuite {
     test("Can add 1 for each element of list") {
         val list = List[Int](1, 2, 3, 4)
-        val incremented = List.incrementByOne(list)(_ + 1)
+        val incremented = List.map(list)(_ + 1)
         assertResult(List[Int](2, 3, 4, 5))(incremented)
+    }
+
+    /**
+     * Write a function that turns each value in a List[Double] into a String. You can use
+     * the expression d.toString to convert some d: Double to a String.
+     * EXERCISE 3.18
+     * */
+    test("Convert double to string"){
+        val list = List[Double](1, 2, 3, 4)
+        val asStrings =  List[String]("1.0", "2.0", "3.0", "4.0")
+        assertResult(asStrings)( List.map(list)(convert = (x: Double) => x.toString))
     }
 }
