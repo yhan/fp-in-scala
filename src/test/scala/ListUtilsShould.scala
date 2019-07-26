@@ -18,4 +18,16 @@ class ListUtilsShould extends FunSuite {
         val asStrings =  List[String]("1.0", "2.0", "3.0", "4.0")
         assertResult(asStrings)( List.map2(list)(convert = (x: Double) => x.toString))
     }
+
+    /**
+     * Write a function filter that removes elements from a list unless they satisfy a given
+     * predicate. Use it to remove all odd numbers from a List[Int].
+     * def filter[A](as: List[A])(f: A => Boolean): List[A]
+     * EXERCISE 3.20
+     * */
+     test( "Filter list"){
+         val list = List[Int](1, 2, 3, 4)
+         assertResult( List[Int]( 2, 4))(List.filter(list)(x => x%2 ==0))
+     }
+
 }
