@@ -8,9 +8,21 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+
+  def reverse[A](list: List[A]) : List[A] = {
+    foldLeft(list, Nil: List[A])((x, y) => Cons(y, x))
+  }
+
+  @scala.annotation.tailrec
+  def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+    case Nil => z
+    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+  }
+
   def productLeftFold(list: List[Int]) :Int ={
     foldLeft(list, 1)(_*_)
   }
+
 
 
   // Build a new list from 'source', using all its elements excluding the last one.
@@ -62,11 +74,6 @@ object List {
     case Cons(x, xs) => f(x, foldRight(xs, z)(f))
   }
 
-  @scala.annotation.tailrec
-  def foldLeft[A,B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-    case Nil => z
-    case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
-  }
 
   def sumLeftFold(list: List[Int]) : Int = {
     return foldLeft(list, 0)(_+_)
