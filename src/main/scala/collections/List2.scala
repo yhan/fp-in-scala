@@ -57,6 +57,10 @@ object List2 {
     case Cons(x, xs) => f(x, foldRight(xs, z)(f))
   }
 
+  def selfConstructor(list : List2[Int]) : List2[Int] = {
+    foldRight(list, Nil: List2[Int])(Cons(_, _))
+  }
+
   /**
    * EXERCISE 3.7
    * Can product, implemented using foldRight, immediately halt the recursion and
