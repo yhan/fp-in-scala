@@ -12,11 +12,11 @@ class ListUtilsShould extends FunSuite {
      * Write a function that turns each value in a List[Double] into a String. You can use
      * the expression d.toString to convert some d: Double to a String.
      * EXERCISE 3.18
-     * */
-    test("Convert double to string"){
+     **/
+    test("Convert double to string") {
         val list = List[Double](1, 2, 3, 4)
-        val asStrings =  List[String]("1.0", "2.0", "3.0", "4.0")
-        assertResult(asStrings)( List.map2(list)(convert = (x: Double) => x.toString))
+        val asStrings = List[String]("1.0", "2.0", "3.0", "4.0")
+        assertResult(asStrings)(List.map2(list)(convert = (x: Double) => x.toString))
     }
 
     /**
@@ -24,10 +24,14 @@ class ListUtilsShould extends FunSuite {
      * predicate. Use it to remove all odd numbers from a List[Int].
      * def filter[A](as: List[A])(f: A => Boolean): List[A]
      * EXERCISE 3.20
-     * */
-     test( "Filter list"){
-         val list = List[Int](1, 2, 3, 4)
-         assertResult( List[Int]( 2, 4))(List.filter(list)(x => x%2 ==0))
-     }
+     **/
+    test("Filter list") {
+        val list = List[Int](1, 2, 3, 4)
+        assertResult(List[Int](2, 4))(List.filter(list)(x => x % 2 == 0))
+    }
 
+    test("Project a list of A to a another list of B with projection function returning a list of B") {
+        val flattenMap = List.flatMap(List(1, 2, 3))(i => List(i, i))
+        assertResult(List[Int](1, 1, 2, 2, 3, 3))(flattenMap)
+    }
 }

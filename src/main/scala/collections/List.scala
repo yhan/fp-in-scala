@@ -10,11 +10,21 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
-    def filter[A](list: List[A])(f: A => Boolean): List[A] = {
-        foldRight(list, Nil: List[A])((a, b) => {
-            if (f(a)) Cons(a, b)
-            else      b
-        })
+    def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
+        case Nil => Nil
+        case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
+    }
+
+    def map2[A, B](list: List[A])(convert: A => B): List[B] = {
+        foldRight(list, Nil: List[B])((x, ys) => Cons(convert(x), ys))
+    }
+
+    def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = {
+        foldRight(list, Nil:List[B])((a, listOfB) => appendByFold(f(a), listOfB))
+    }
+
+    def map3[A, B](list: List[A])(convert: A => B): List[B] = {
+        foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
     }
 
     /**
@@ -28,24 +38,17 @@ object List {
     /**
      * Represent an iteration structure
      **/
-    @scala.annotation.tailrec def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+    @scala.annotation.tailrec
+    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
         case Nil => z
         case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
     }
 
-    def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
-        case Nil => Nil
-        case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
+    def filter[A](list: List[A])(f: A => Boolean): List[A] = {
+        foldRight(list, Nil: List[A])((a, b) => {
+            if (f(a)) Cons(a, b) else b
+        })
     }
-
-    def map2[A, B](list: List[A])(convert: A => B): List[B] = {
-        foldRight(list, Nil: List[B])((x, xs) => Cons(convert(x), xs))
-    }
-
-    def map3[A, B](list: List[A])(convert: A => B): List[B] = {
-        foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
-    }
-
 
     def appendByFold[A](left: List[A], right: List[A]): List[A] = {
         foldRight(left, right)(Cons(_, _))
@@ -55,11 +58,9 @@ object List {
         foldRight(listOfLists, Nil: List[A])(appendByFold)
     }
 
-
     def flattenByLeftFold[A](listOfLists: List[List[A]]): List[A] = {
         foldLeft(listOfLists, Nil: List[A])(appendByFold)
     }
-
 
     // length of a1=M, a2=N
     // complexity O(M)
@@ -174,17 +175,22 @@ object List {
         case Nil => Cons(head, Nil)
     }
 
-    /**
-     * Drop the the first N elements*/
-    def drop[A](l: List[A], removeCount: Int): List[A] = {
-        @scala.annotation.tailrec def inner[A](temp: List[A], count: Int): List[A] = temp match {
-            case Cons(x, xs) => {
-                if (count < removeCount) inner(xs, count + 1) else temp
-            }
-            case Nil => Nil
-        }
-
-        inner(l, 0)
+    //    /**
+    //     * Drop the the first N elements*/
+    //    def drop[A](l: List[A], removeCount: Int): List[A] = {
+    //        @scala.annotation.tailrec
+    //        def inner[A](temp: List[A], count: Int): List[A] = temp match {
+    //            case Cons(x, xs) => {
+    //                if (count < removeCount) inner(xs, count + 1) else temp
+    //            }
+    //            case Nil => Nil
+    //        }
+    //
+    //        inner(l, 0)
+    //    }
+    def drop[A](l: List[A], removeCount: Int): List[A] = l match {
+        case Cons(x, xs) => if (removeCount > 0) drop[A](xs, removeCount - 1) else l
+        case Nil => Nil
     }
 
 
@@ -213,5 +219,7 @@ object List {
         }
         case Nil => Nil
     }
+
+
 }
 
