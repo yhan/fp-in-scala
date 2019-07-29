@@ -10,6 +10,29 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+    /**
+     * Represent an iteration structure
+     **/
+    @scala.annotation.tailrec
+    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+        case Nil => z
+        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+    }
+
+    /**
+     * Represent an recursion structure
+     **/
+    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
+        case Nil => z
+        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+    }
+
+    def addPairwise(list1: List[Int], list2: List[Int]): List[Int] = (list1, list2) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (Cons(x, xs),  Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
+    }
+
     def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
         case Nil => Nil
         case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
@@ -35,23 +58,6 @@ object List {
 
     def map3[A, B](list: List[A])(convert: A => B): List[B] = {
         foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
-    }
-
-    /**
-     * Represent an recursion structure
-     **/
-    def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-        case Nil => z
-        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }
-
-    /**
-     * Represent an iteration structure
-     **/
-    @scala.annotation.tailrec
-    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-        case Nil => z
-        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
     }
 
     def filter[A](list: List[A])(f: A => Boolean): List[A] = {
