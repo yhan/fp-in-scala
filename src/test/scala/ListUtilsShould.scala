@@ -40,10 +40,18 @@ class ListUtilsShould extends FunSuite {
         assertResult(List[Int](1, 1, 2, 2, 3, 3))(flattenMap)
     }
 
-    test("Specific Zip two list of Integer by summing each corresponding element"){
-        val list1 = List(1,2,3)
-        val list2 = List(4,5,6)
+    test("Specific Zip two list of Integer by summing each corresponding element") {
+        val list1 = List(1, 2, 3)
+        val list2 = List(4, 5, 6)
 
-        assertResult(List(5,7,9))(List.addPairwise(list1, list2))
+        assertResult(List(5, 7, 9))(List.addPairwise(list1, list2))
+    }
+
+
+    test("Zip two lists") {
+        val list1 = List(1, 2, 3)
+        val list2 = List(4, 5, 6)
+
+        assertResult(List(5, 7, 9))(List.zipWith(list1, list2)((x, y) => x + y))
     }
 }

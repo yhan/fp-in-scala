@@ -10,6 +10,18 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+    def zipWith[A, B, C](list1: List[A], list2: List[B])( function: (A, B) => C): List[C] = (list1, list2) match{
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (Cons(x, xs),  Cons(y, ys)) => Cons(function(x, y), zipWith(xs, ys)( function))
+    }
+
+    def addPairwise(list1: List[Int], list2: List[Int]): List[Int] = (list1, list2) match {
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
+        case (Cons(x, xs),  Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
+    }
+
     /**
      * Represent an iteration structure
      **/
@@ -25,12 +37,6 @@ object List {
     def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
         case Nil => z
         case Cons(x, xs) => f(x, foldRight(xs, z)(f))
-    }
-
-    def addPairwise(list1: List[Int], list2: List[Int]): List[Int] = (list1, list2) match {
-        case (Nil, _) => Nil
-        case (_, Nil) => Nil
-        case (Cons(x, xs),  Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
     }
 
     def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
