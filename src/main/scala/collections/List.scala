@@ -23,6 +23,16 @@ object List {
         foldRight(list, Nil:List[B])((a, listOfB) => appendByFold(f(a), listOfB))
     }
 
+    def filterUsingFlatMap[T](list: List[T])(f: T => Boolean): List[T] = {
+        flatMap(list)(t =>
+        {
+            if (f(t))
+                List[T](t)
+            else
+                Nil: List[T]
+        })
+    }
+
     def map3[A, B](list: List[A])(convert: A => B): List[B] = {
         foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
     }

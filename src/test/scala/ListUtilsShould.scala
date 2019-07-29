@@ -30,6 +30,11 @@ class ListUtilsShould extends FunSuite {
         assertResult(List[Int](2, 4))(List.filter(list)(x => x % 2 == 0))
     }
 
+    test("Filter list using flatMap") {
+        val list = List[Int](1, 2, 3, 4)
+        assertResult(List[Int](2, 4))(List.filterUsingFlatMap(list)(x => x % 2 == 0))
+    }
+
     test("Project a list of A to a another list of B with projection function returning a list of B") {
         val flattenMap = List.flatMap(List(1, 2, 3))(i => List(i, i))
         assertResult(List[Int](1, 1, 2, 2, 3, 3))(flattenMap)
