@@ -10,6 +10,8 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
+    def apply[A](as: A*): List[A] = if (as.isEmpty) Nil else Cons(as.head, apply(as.tail: _*))
+
     /**
      * time: O(m+n)
      * */
@@ -23,7 +25,6 @@ object List {
 
         loop(list1, list2)
     }
-
     @annotation.tailrec
     def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l,prefix) match {
         case (_,Nil) => true
@@ -32,6 +33,7 @@ object List {
         }
         case _ => false
     }
+
     @annotation.tailrec
     def hasSubsequence2[A](sup: List[A], sub: List[A]): Boolean = {
         sup match {
@@ -122,14 +124,15 @@ object List {
         case Cons(h, t) => Cons(h, append(t, a2))
     }
 
+
     def reverse[A](list: List[A]): List[A] = {
         foldLeft(list, Nil: List[A])((x, y) => Cons(y, x))
     }
 
-
     def productLeftFold(list: List[Int]): Int = {
         foldLeft(list, 1)(_ * _)
     }
+
 
     // Build a new list from 'source', using all its elements excluding the last one.
     // length of source M: complexity = O(M^2)
@@ -148,7 +151,6 @@ object List {
         loop(source, newOne)
     }
 
-
     def initRecursiveUsingFrames[A](l: List[A]): List[A] = l match {
         case Nil => sys.error("init of empty list")
         case Cons(_, Nil) => Nil
@@ -160,14 +162,15 @@ object List {
         case Cons(x, xs) => x + sum(xs)
     }
 
+
     def sum2(ints: List[Int]): Int = {
         foldRight(ints, 0)(_ + _)
     }
 
-
     def sumLeftFold(list: List[Int]): Int = {
         return foldLeft(list, 0)(_ + _)
     }
+
 
     def lengthLeftFold[A](list: List[A]): Int = {
         foldLeft(list, 0)((y, _) => y + 1)
@@ -177,7 +180,6 @@ object List {
     def length[A](list: List[A]): Int = {
         foldRight(list, 0)((_, xs) => 1 + xs)
     }
-
 
     def selfConstructor(list: List[Int]): List[Int] = {
         //The type annotation Nil:List[Int] is needed here, because otherwise Scala infers the B type parameter in
@@ -209,8 +211,6 @@ object List {
         case Cons(0.0, _) => 0.0
         case Cons(x, xs) => x * product(xs)
     }
-
-    def apply[A](as: A*): List[A] = if (as.isEmpty) Nil else Cons(as.head, apply(as.tail: _*))
 
 
     //  Implement the function tail for removing the first element of a List. Note that the
