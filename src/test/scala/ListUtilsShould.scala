@@ -56,12 +56,28 @@ class ListUtilsShould extends FunSuite {
     }
 
 
-    test("Can determine if the second list is a sub sequence of the first list"){
+    test("The second list is a sub sequence of the first list"){
         val list1 = collections.List("word1", "word2", "word2", "word3", "word1")
         val list2 = collections.List("word2", "word3")
 
-        val isSebSequence = List.hasSubsequence2(list1, list2)
-        assert(true == isSebSequence)
+        val isSebSequence = List.hasSubsequence(list1, list2)
+        assert(isSebSequence)
+    }
+
+    test("The second list is NOT a sub sequence of the first list"){
+        val list1 = collections.List("word1", "word2", "word2", "word3", "word1")
+        val list2 = collections.List("word1", "word3")
+
+        val isSebSequence = List.hasSubsequence(list1, list2)
+        assert(!isSebSequence)
+    }
+
+    test("Nil list is subsequence of Nil list"){
+        val list1 = List[String]()
+        val list2 =  List[String]()
+
+        val isSebSequence = List.hasSubsequence(list1 , list2)
+        assert(isSebSequence)
     }
 
     def write(cmd: String): Any = {

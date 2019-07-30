@@ -110,5 +110,4 @@ class ScalaCollectionShould extends FunSuite {
 
     }
 
-
 }

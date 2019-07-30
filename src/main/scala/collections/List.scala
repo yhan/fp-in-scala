@@ -13,16 +13,12 @@ object List {
     /**
      * time: O(m+n)
      * */
-    def hasSubsequence(list1: List[String], list2: List[String]): Boolean = {
+    def hasSubsequence[T](list1: List[T], list2: List[T]): Boolean = {
 
-        def loop(a: List[String], b: List[String]): Boolean = a match {
-            case Cons(h, t) => {
-                b match {
-                    case Cons(h2, t2) => if (h == h2) hasSubsequence(t, t2) else hasSubsequence(t, Cons(h2, t2))
-                    case Nil => true
-                }
-            }
-            case Nil => false
+        def loop(a: List[T], b: List[T]): Boolean = (a) match {
+            case _ if(startsWith(a, b))=> true
+            case Nil =>  b == Nil
+            case Cons(_, t) => hasSubsequence(t, b)
         }
 
         loop(list1, list2)
@@ -42,7 +38,7 @@ object List {
             case Nil => sub == Nil
             case x if startsWith(sup, sub) => {
                 true
-            }
+            } // if startWith returns false, will jump into next case matching
             case Cons(_, t) => {
                 hasSubsequence2(t, sub)
             }
