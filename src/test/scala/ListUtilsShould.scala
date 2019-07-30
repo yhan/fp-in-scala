@@ -54,4 +54,25 @@ class ListUtilsShould extends FunSuite {
 
         assertResult(List(5, 7, 9))(List.zipWith(list1, list2)((x, y) => x + y))
     }
+
+
+    test("Can determine if the second list is a sub sequence of the first list"){
+        val list1 = collections.List("word1", "word2", "word2", "word3", "word1")
+        val list2 = collections.List("word2", "word3")
+
+        val isSebSequence = List.hasSubsequence2(list1, list2)
+        assert(true == isSebSequence)
+    }
+
+    def write(cmd: String): Any = {
+        cmd match {
+            case "start" | "go" => println("starting")
+            case _ => println("doing nothing")
+            case "stop" | "quit" | "exit" => println("stopping")
+        }
+    }
+
+    test("multiple match cases"){
+        write("stop")
+    }
 }

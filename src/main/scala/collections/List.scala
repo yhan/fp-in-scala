@@ -10,23 +10,61 @@ case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
 object List {
-    def zipWith[A, B, C](list1: List[A], list2: List[B])( function: (A, B) => C): List[C] = (list1, list2) match{
+    /**
+     * time: O(m+n)
+     * */
+    def hasSubsequence(list1: List[String], list2: List[String]): Boolean = {
+
+        def loop(a: List[String], b: List[String]): Boolean = a match {
+            case Cons(h, t) => {
+                b match {
+                    case Cons(h2, t2) => if (h == h2) hasSubsequence(t, t2) else hasSubsequence(t, Cons(h2, t2))
+                    case Nil => true
+                }
+            }
+            case Nil => false
+        }
+
+        loop(list1, list2)
+    }
+
+    @annotation.tailrec
+    def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l,prefix) match {
+        case (_,Nil) => true
+        case (Cons(h,t),Cons(h2,t2)) if h == h2 => {
+            startsWith(t, t2)
+        }
+        case _ => false
+    }
+    @annotation.tailrec
+    def hasSubsequence2[A](sup: List[A], sub: List[A]): Boolean = {
+        sup match {
+            case Nil => sub == Nil
+            case x if startsWith(sup, sub) => {
+                true
+            }
+            case Cons(_, t) => {
+                hasSubsequence2(t, sub)
+            }
+        }
+    }
+
+    def zipWith[A, B, C](list1: List[A], list2: List[B])(function: (A, B) => C): List[C] = (list1, list2) match {
         case (Nil, _) => Nil
         case (_, Nil) => Nil
-        case (Cons(x, xs),  Cons(y, ys)) => Cons(function(x, y), zipWith(xs, ys)( function))
+        case (Cons(x, xs), Cons(y, ys)) => Cons(function(x, y), zipWith(xs, ys)(function))
     }
 
     def addPairwise(list1: List[Int], list2: List[Int]): List[Int] = (list1, list2) match {
         case (Nil, _) => Nil
         case (_, Nil) => Nil
-        case (Cons(x, xs),  Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
+        case (Cons(x, xs), Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
     }
 
     /**
      * Represent an iteration structure
      **/
-    @scala.annotation.tailrec
-    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+    @scala.annotation.tailrec def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
         case Nil => z
         case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
     }
@@ -49,16 +87,12 @@ object List {
     }
 
     def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = {
-        foldRight(list, Nil:List[B])((a, listOfB) => appendByFold(f(a), listOfB))
+        foldRight(list, Nil: List[B])((a, listOfB) => appendByFold(f(a), listOfB))
     }
 
     def filterUsingFlatMap[T](list: List[T])(f: T => Boolean): List[T] = {
-        flatMap(list)(t =>
-        {
-            if (f(t))
-                List[T](t)
-            else
-                Nil: List[T]
+        flatMap(list)(t => {
+            if (f(t)) List[T](t) else Nil: List[T]
         })
     }
 
