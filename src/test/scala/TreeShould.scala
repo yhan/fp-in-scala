@@ -1,25 +1,31 @@
 import collections.{Branch, Leaf, Tree}
 import org.scalatest.FunSuite
 
-class TreeShould extends FunSuite {
-    test("Size of Tree") {
-        val tree = Branch(Leaf(1), Leaf(8))
-        val size = collections.Tree.size(tree)
 
+class TreeShould extends FunSuite {
+    /**
+     * 1
+     * / \
+     * 2   8
+     * / \
+     * 1   5
+     **/
+    val tree = Branch(3, Branch(2, Leaf(1), Leaf(5)), Leaf(8))
+
+    test("Size of Tree") {
+        val tree = Branch(2, Leaf(1), Leaf(8))
+
+        val size = collections.Tree.size(tree)
         assertResult(3)(size)
     }
 
     test("Size of Tree of 3 levels") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val size = collections.Tree.size(tree)
-
         assertResult(5)(size)
     }
 
     test("Size of Tree of 3 levels (using fold)") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val size = collections.Tree.sizeByFold(tree)
-
         assertResult(5)(size)
     }
 
@@ -29,13 +35,11 @@ class TreeShould extends FunSuite {
      * and y.)
      **/
     test("Find max value of tree") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val max = collections.Tree.maximum(tree)
         assertResult(8)(max)
     }
 
     test("Max value of tree by fold") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val max = collections.Tree.maximumByFold(tree)
         assertResult(8)(max)
     }
@@ -45,13 +49,11 @@ class TreeShould extends FunSuite {
      * to any leaf.
      **/
     test("Depth of tree") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val depth = Tree.depth(tree)
         assertResult(3)(depth)
     }
 
     test("Depth of tree by fold") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val depth = Tree.depthByFold(tree)
         assertResult(3)(depth)
     }
@@ -61,14 +63,16 @@ class TreeShould extends FunSuite {
      * each element in a tree with a given function
      **/
     test("Map") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val mapped = Tree.map(tree)(_ * 2)
-        assertResult(Branch(Branch(Leaf(2), Leaf(10)), Leaf(16)))(mapped)
+        assertResult(Branch(6, Branch(4, Leaf(2), Leaf(10)), Leaf(16)))(mapped)
     }
 
     test("Map by fold") {
-        val tree = Branch(Branch(Leaf(1), Leaf(5)), Leaf(8))
         val mapped = Tree.mapByFold(tree)(_ * 2)
-        assertResult(Branch(Branch(Leaf(2), Leaf(10)), Leaf(16)))(mapped)
+        assertResult(Branch(6, Branch(4, Leaf(2), Leaf(10)), Leaf(16)))(mapped)
+    }
+
+    test("print all depth first") {
+        Tree.printDepthFirst(tree)
     }
 }
