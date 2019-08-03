@@ -9,7 +9,8 @@ case object NilList extends List[Nothing]
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
 
-object List {
+object List
+{
     def apply[A](as: A*): List[A] = if (as.isEmpty) NilList else Cons(as.head, apply(as.tail: _*))
 
     /**

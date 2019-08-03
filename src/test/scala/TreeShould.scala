@@ -2,6 +2,7 @@ import collections.{Branch, Leaf, Tree}
 import org.scalatest.FunSuite
 
 
+
 class TreeShould extends FunSuite {
     /**
      * 1
