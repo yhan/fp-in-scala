@@ -1,4 +1,4 @@
-package collections
+//package collections
 
 import org.scalatest.FunSuite
 
@@ -8,6 +8,7 @@ class ScalaCollectionShould extends FunSuite {
     test("Concat with ++") {
         val mainList = scala.collection.immutable.List(3, 2, 1)
         assertResult(List(3, 2, 1, 4, 5, 6))(mainList ++ List(4, 5, 6))
+
     }
 
     test("Prepend with ++:") {

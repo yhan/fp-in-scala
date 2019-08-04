@@ -12,7 +12,7 @@ object Option{
     def empty[A] : Option[A] = None
 }
 
-case class Some[+A](get: A) extends Option[A]
+case class Some[+A](value: A) extends Option[A]
 
 case object None extends Option[Nothing]
 
@@ -27,17 +27,17 @@ trait Option[+A] {
         case Some(a) => Some(f(a))
     }
 
-    def flatMap[B](f: A => Option[B]): Option[B] = {
-        val value: Option[Option[B]] = map(f)
-        value.getOrElse(None)
-    }
-
     /**
      * explicit pattern matching
      **/
     def flatMap2[B](f: A => Option[B]): Option[B] = this match {
         case None => None
         case Some(a) => f(a)
+    }
+
+    def flatMap[B](f: A => Option[B]): Option[B] = {
+        val value: Option[Option[B]] = map(f)
+        value.getOrElse(None)
     }
 
     /**
@@ -53,15 +53,15 @@ trait Option[+A] {
      * explicit pattern matching
      **/
     def orElse2[B >: A](ob: => Option[B]): Option[B] = this match {
-        case None => None
-        case Some(a) => ob
+        case None => ob
+        case _ => this
     }
 
     /**
      * returns the first Option if it’s defined; otherwise, it returns the second Option.
      **/
     def orElse[B >: A](ob: => Option[B]): Option[B] = {
-        val value: Option[Some[A]] = this.map(Some(_))
+        val value: Option[Some[A]] = this.map(f = (a: A) => Some(a))
         value.getOrElse(ob)
     }
 
