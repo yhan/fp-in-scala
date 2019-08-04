@@ -1,4 +1,5 @@
-import collections.List
+package collections
+
 import org.scalatest.FunSuite
 
 class ListUtilsShould extends FunSuite {

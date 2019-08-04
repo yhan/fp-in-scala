@@ -1,7 +1,6 @@
-package tests {
+package collections
 
-  import collections.List
-  import org.scalatest.FunSuite
+import org.scalatest.FunSuite
 
 
 
@@ -96,4 +95,3 @@ package tests {
       assert(appended == List[Int](1, 2, 3, 4, 5, 6, 7))
     }
   }
-}

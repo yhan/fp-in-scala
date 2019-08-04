@@ -3,9 +3,6 @@ package errorsHandling
 object Option{
     /** An Option factory which creates Some(x) if the argument is not null,
      *  and None if it is null.
-     *
-     *  @param  x the value
-     *  @return   Some(value) if value != null, None if value == null
      */
     def apply[A](x: A): Option[A] = if (x == null) None else Some(x)
 

@@ -1,4 +1,5 @@
-import collections.{Branch, Leaf, Tree}
+package collections
+
 import org.scalatest.FunSuite
 
 

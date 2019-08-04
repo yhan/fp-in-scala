@@ -1,6 +1,6 @@
-package tests {
-    import errorsHandling.{Option, Some, None}
-    import org.scalatest.FunSuite
+package errorsHandling
+
+import org.scalatest.FunSuite
 
     class OptionShould extends FunSuite {
 
@@ -25,5 +25,4 @@ package tests {
             assertResult(None)(mapped)
         }
     }
-}
 

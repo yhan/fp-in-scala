@@ -1,7 +1,8 @@
+package collections
+
 import org.scalatest.FunSuite
 
 import scala.annotation.tailrec
-import scala.runtime.Nothing$
 
 class ScalaCollectionShould extends FunSuite {
     test("Concat with ++") {
