@@ -31,16 +31,6 @@ class OptionShould extends FunSuite {
         Some(xs.sum / xs.length)
     }
 
-    /**
-     * Implement the variance function in terms of flatMap. If the mean of a sequence is m,
-     * the variance is the mean of math.pow(x - m, 2) for each element x in the sequence.
-     * See the definition of variance on Wikipedia (http://mng.bz/0Qsr).
-     * def variance(xs: Seq[Double]): Option[Double]
-     *
-     */
-    def getVariance2(xs: Seq[Double]): Option[Double] = {
-        mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
-    }
 
     test("Variance with Option") {
         val seq: Seq[Double] = Seq()
@@ -56,6 +46,7 @@ class OptionShould extends FunSuite {
         variance
     }
 
+
     test("getVariance without Option") {
         val seq: Seq[Double] = Seq()
         val variance = getVariance(seq)
@@ -63,5 +54,51 @@ class OptionShould extends FunSuite {
         assertResult(true)(variance.isNaN)
     }
 
+    /**
+     * Implement the variance function in terms of flatMap. If the mean of a sequence is m,
+     * the variance is the mean of math.pow(x - m, 2) for each element x in the sequence.
+     * See the definition of variance on Wikipedia (http://mng.bz/0Qsr).
+     * def variance(xs: Seq[Double]): Option[Double]
+     *
+     */
+    def getVariance2(xs: Seq[Double]): Option[Double] = {
+        mean(xs).flatMap(m => mean(xs.map(x => math.pow(x - m, 2))))
+    }
+
+    test("absolute") {
+        val optionInt = Option[Int](-42)
+        val abs = optionInt.absolute(Option(-5))
+        assertResult(5)(abs.asInstanceOf[Some[Double]].value)
+    }
+
+    test("absolute with instance function"){
+        val option = new IntegerOptionWrapper(5)
+
+        val abs = option.absolute()
+        assertResult(5)(abs.asInstanceOf[Some[Int]].value)
+    }
+}
+
+
+class VarianceCalcShould extends FunSuite {
+    test("Normal case non functional impl"){
+        val variance = VarianceHelper.variance2(for (i <- 1 to 6 ) yield i.toDouble)
+        assertResult(2.9166666666666665)(variance.getOrElse())
+    }
+
+    test("edge case non functional impl"){
+        val variance = VarianceHelper.variance2(Seq())
+        assertResult(None)(variance)
+    }
+
+    test("Normal case in FP"){
+        val variance = VarianceHelper.variance2(for (i <- 1 to 6 ) yield i.toDouble)
+        assertResult(2.9166666666666665)(variance.getOrElse())
+    }
+
+    test("edge case in FP"){
+        val variance = VarianceHelper.variance(Seq())
+        assertResult(None)(variance)
+    }
 }
 
