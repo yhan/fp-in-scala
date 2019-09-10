@@ -5,6 +5,20 @@ import org.scalatest.FunSuite
 
 
   class ListShould extends FunSuite {
+    test("iterate"){
+      val expected = List[String]("world", "bonjour", "salut")
+      val actual = List.iterate(expected)
+      assertResult(expected)(actual)
+    }
+
+    test("foldRight"){
+      val list = List[Int](1,2,3)
+      val result = List.foldRight[Int, Int](list, 42)((a, b) => a + b)
+
+      assertResult(48)(result)
+    }
+
+
     test("Can remove the first element of list then return it") {
       val expected = List[String]("world", "bonjour", "salut")
 

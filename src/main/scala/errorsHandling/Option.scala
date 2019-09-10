@@ -1,77 +1,21 @@
 package errorsHandling
 
-object Option{
-    /** An Option factory which creates Some(x) if the argument is not null,
-     *  and None if it is null.
-     */
-    def apply[A](x: A): Option[A] = if (x == null) None else Some(x)
-
-    /** An Option factory which returns `None` in a manner consistent with
-     *  the collections hierarchy.
-     */
-    def empty[A] : Option[A] = None
-}
 
 case class Some[+A](value: A) extends Option[A]
 
 case object None extends Option[Nothing]
 
-class IntegerOptionWrapper(intValue: Int){
-   private val option = Option[Int](intValue)
-
-    def absolute() : Option[Int] = {
-        val function = option.lift(math.abs)
-        function(option)
-    }
-}
-
-
-object VarianceHelper{
-
-    def calcMean(xs: Seq[Double]) : Option[Double] = {
-        if(xs.isEmpty) return None
-        Some(xs.sum/ xs.length)
-    }
-
-    /**
-     * Implement the variance function in terms of flatMap. If the mean of a sequence is m,
-     * the variance is the mean of math.pow(x - m, 2) for each element x in the sequence.
-     * See the definition of variance on Wikipedia (http://mng.bz/0Qsr).
-     * def variance(xs: Seq[Double]): Option[Double]
-     *
-     */
-    def variance(xs: Seq[Double]): Option[Double] = {
-        // flatMap ensures when calcMean yields None, it directly return None without doing the rest of computation
-        calcMean(xs) flatMap (m => calcMean(xs.map(x => math.pow(x - m, 2))))
-    }
-
-    def variance2(xs: Seq[Double]): Option[Double] = {
-        val mean = calcMean(xs)
-
-        // "Classic paradigm" will be more complicated,
-        // boilerplate code inspecting the Option[Double] mean: if valid / invalid ...
-        mean match {
-            case Some(meanValue) =>  calcMean(xs.map(x => math.pow(x - meanValue, 2)))
-            case None => None
-        }
-    }
-}
-
 trait Option[+A] {
+
     /**
      * Apply f if the Option is not None.
-     * */
+     **/
     def map[B](f: A => B): Option[B] = this match {
         case None => None
         case Some(a) => Some(f(a))
         case op => {
             throw new Exception("Other types than None or Some are not managed")
-            }
-    }
-
-    def flatMap[B](f: A => Option[B]): Option[B] = {
-        val value: Option[Option[B]] = map(f)
-        value.getOrElse(None)
+        }
     }
 
     /**
@@ -82,7 +26,12 @@ trait Option[+A] {
         case Some(a) => f(a)
     }
 
-    def lift[A,B](f: A => B): Option[A] => Option[B] = {
+    def flatMap[B](f: A => Option[B]): Option[B] = {
+        val value: Option[Option[B]] = map(f)
+        value.getOrElse(None)
+    }
+
+    def lift[A, B](f: A => B): Option[A] => Option[B] = {
         (_: Option[A]).map(f)
     }
 
@@ -127,7 +76,75 @@ trait Option[+A] {
     def filter2(f: A => Boolean): Option[A] = {
         this.flatMap(a => if (f(a)) Some(a) else None)
     }
+}
 
+object Option {
+    /** An Option factory which creates Some(x) if the argument is not null,
+     * and None if it is null. */
+    def apply[A](x: A): Option[A] = if (x == null) None else Some(x)
+
+    /** An Option factory which returns `None` in a manner consistent with
+     * the collections hierarchy. */
+    def empty[A]: Option[A] = None
+
+    /*
+   Combines a list of Options into one Option containing
+        a list of all the Some values in the original list. If the original list contains None even
+    once, the result of the function should be None; otherwise the result should be Some
+    with a list of all the values.
+ */
+    def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
+        case Nil => None
+        case head :: tl => head.flatMap((hh: A) => sequence(tl).map(hh :: _))
+    }
+
+
+    /** *
+     * Lift binary arguments func to two option argument func
+     * ***/
+    def map2[A, B, C](a: Option[A], b: Option[B])(f: (A, B) => C): Option[C] = {
+        val func = (aa: A) => {
+            val value: Option[C] = b map (bb => f(aa, bb))
+            value
+        }
+        a flatMap func
+    }
+
+    def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
+        case Nil => None
+        case h :: t => map2(f(h), traverse(t)(f))(_ :: _)
+    }
+
+
+    /** **********
+     * It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise
+     * Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an
+     * unfortunate consequence of Scala using subtyping to encode algebraic data types.
+     * // override def foldRight[B](z: B)(op: (A, B) => B): B
+     * *********/
+    def sequence_1[A](a: List[Option[A]]): Option[List[A]] = {
+        a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
+    }
+
+
+    def liftTriple[A, B, C, D](a: Option[A], b: Option[B], c: Option[C])(f: (A, B, C) => D): Option[D] = {
+
+        val func: (A, B) => Option[D] = (aa: A, bb: B) => {
+            val value: Option[D] = c map (cc => f(aa, bb, cc))
+            value
+        }
+        return map2(a, b)(func).getOrElse(None)
+    }
+
+
+
+    def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+        a.foldRight[Option[List[B]]](Some(Nil))((h: A, result: Option[List[B]]) => map2(f(h), result)(_ :: _))
+    }
+
+    def sequenceByTraverse[A](a: List[Option[A]]) : Option[List[A]] ={
+        traverse2(a)(x => x)
+    }
 
 
 }

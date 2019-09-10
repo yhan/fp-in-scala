@@ -1,17 +1,18 @@
 package collections
 
 import scala.annotation.tailrec
+import errorsHandling.Option
 
 sealed trait List[+A]
 
-case object NilList extends List[Nothing]
+case object Nil extends List[Nothing]
 
 case class Cons[+A](head: A, tail: List[A]) extends List[A]
 
-
 object List
 {
-    def apply[A](as: A*): List[A] = if (as.isEmpty) NilList else Cons(as.head, apply(as.tail: _*))
+    def apply[A](as: A*): List[A] = if (as.isEmpty) Nil else Cons(as.head, apply(as.tail: _*))
+
 
     /**
      * time: O(m+n)
@@ -20,7 +21,7 @@ object List
 
         def loop(a: List[T], b: List[T]): Boolean = (a) match {
             case _ if(startsWith(a, b))=> true
-            case NilList =>  b == NilList
+            case Nil =>  b == Nil
             case Cons(_, t) => hasSubsequence(t, b)
         }
 
@@ -28,7 +29,7 @@ object List
     }
     @annotation.tailrec
     def startsWith[A](l: List[A], prefix: List[A]): Boolean = (l,prefix) match {
-        case (_,NilList) => true
+        case (_,Nil) => true
         case (Cons(h,t),Cons(h2,t2)) if h == h2 => {
             startsWith(t, t2)
         }
@@ -38,7 +39,7 @@ object List
     @annotation.tailrec
     def hasSubsequence2[A](sup: List[A], sub: List[A]): Boolean = {
         sup match {
-            case NilList => sub == NilList
+            case Nil => sub == Nil
             case x if startsWith(sup, sub) => {
                 true
             } // if startWith returns false, will jump into next case matching
@@ -49,14 +50,14 @@ object List
     }
 
     def zipWith[A, B, C](list1: List[A], list2: List[B])(function: (A, B) => C): List[C] = (list1, list2) match {
-        case (NilList, _) => NilList
-        case (_, NilList) => NilList
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
         case (Cons(x, xs), Cons(y, ys)) => Cons(function(x, y), zipWith(xs, ys)(function))
     }
 
     def addPairwise(list1: List[Int], list2: List[Int]): List[Int] = (list1, list2) match {
-        case (NilList, _) => NilList
-        case (_, NilList) => NilList
+        case (Nil, _) => Nil
+        case (_, Nil) => Nil
         case (Cons(x, xs), Cons(y, ys)) => Cons(x + y, addPairwise(xs, ys))
     }
 
@@ -65,7 +66,7 @@ object List
      **/
     @scala.annotation.tailrec
     def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-        case NilList => z
+        case Nil => z
         case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
     }
 
@@ -73,35 +74,35 @@ object List
      * Represent an recursion structure
      **/
     def foldRight[A, B](as: List[A], z: B)(f: (A, B) => B): B = as match {
-        case NilList => z
-        case Cons(x, xs) => f(x, foldRight(xs, z)(f))
+        case Nil => z
+        case Cons(h, t) => f(h, foldRight(t, z)(f))
     }
 
     def map[A, B](list: List[A])(convert: A => B): List[B] = list match {
-        case NilList => NilList
+        case Nil => Nil
         case Cons(x, xs) => Cons(convert(x), map(xs)(convert))
     }
 
     def map2[A, B](list: List[A])(convert: A => B): List[B] = {
-        foldRight(list, NilList: List[B])((x, ys) => Cons(convert(x), ys))
+        foldRight(list, Nil: List[B])((x, ys) => Cons(convert(x), ys))
     }
 
     def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = {
-        foldRight(list, NilList: List[B])((a, listOfB) => appendByFold(f(a), listOfB))
+        foldRight(list, Nil: List[B])((a, listOfB) => appendByFold(f(a), listOfB))
     }
 
     def filterUsingFlatMap[T](list: List[T])(f: T => Boolean): List[T] = {
         flatMap(list)(t => {
-            if (f(t)) List[T](t) else NilList: List[T]
+            if (f(t)) List[T](t) else Nil: List[T]
         })
     }
 
     def map3[A, B](list: List[A])(convert: A => B): List[B] = {
-        foldLeft(list, NilList: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
+        foldLeft(list, Nil: List[B])((xs, x) => Cons(convert(x), xs)) // <== will yield a reversed list
     }
 
     def filter[A](list: List[A])(f: A => Boolean): List[A] = {
-        foldRight(list, NilList: List[A])((a, b) => {
+        foldRight(list, Nil: List[A])((a, b) => {
             if (f(a)) Cons(a, b) else b
         })
     }
@@ -111,24 +112,24 @@ object List
     }
 
     def flattenByRightFold[A](listOfLists: List[List[A]]): List[A] = {
-        foldRight(listOfLists, NilList: List[A])(appendByFold)
+        foldRight(listOfLists, Nil: List[A])(appendByFold)
     }
 
     def flattenByLeftFold[A](listOfLists: List[List[A]]): List[A] = {
-        foldLeft(listOfLists, NilList: List[A])(appendByFold)
+        foldLeft(listOfLists, Nil: List[A])(appendByFold)
     }
 
     // length of a1=M, a2=N
     // complexity O(M)
     //  @tailrec  => Is not tail recursion
     def append[A](a1: List[A], a2: List[A]): List[A] = a1 match {
-        case NilList => a2
+        case Nil => a2
         case Cons(h, t) => Cons(h, append(t, a2))
     }
 
 
     def reverse[A](list: List[A]): List[A] = {
-        foldLeft(list, NilList: List[A])((x, y) => Cons(y, x))
+        foldLeft(list, Nil: List[A])((x, y) => Cons(y, x))
     }
 
     def productLeftFold(list: List[Int]): Int = {
@@ -142,8 +143,8 @@ object List
         val newOne = List[A]()
 
         @scala.annotation.tailrec def loop(src: List[A], buffer: List[A]): List[A] = src match {
-            case NilList => NilList
-            case Cons(head, tail) => if (tail == NilList) {
+            case Nil => Nil
+            case Cons(head, tail) => if (tail == Nil) {
                 return buffer
             } else loop(tail, append(buffer, List[A] {
                 head
@@ -154,13 +155,13 @@ object List
     }
 
     def initRecursiveUsingFrames[A](l: List[A]): List[A] = l match {
-        case NilList => sys.error("init of empty list")
-        case Cons(_, NilList) => NilList
+        case Nil => sys.error("init of empty list")
+        case Cons(_, Nil) => Nil
         case Cons(h, t) => Cons(h, init(t))
     }
 
     def sum(ints: List[Int]): Int = ints match {
-        case NilList => 0
+        case Nil => 0
         case Cons(x, xs) => x + sum(xs)
     }
 
@@ -186,7 +187,7 @@ object List
     def selfConstructor(list: List[Int]): List[Int] = {
         //The type annotation Nil:List[Int] is needed here, because otherwise Scala infers the B type parameter in
         //foldRight as List[Nothing].
-        foldRight(list, NilList: List[Int])(Cons(_, _))
+        foldRight(list, Nil: List[Int])(Cons(_, _))
     }
 
     /**
@@ -196,7 +197,7 @@ object List
      * might work if you call foldRight with a large list. This is a deeper question that we’ll
      * return to in chapter 5.*/
     def foldRightWithCircuitBreaker[A, B](as: List[A], z: B, broken: B)(f: (A, B) => B)(circuit: A => Boolean): B = as match {
-        case NilList => z
+        case Nil => z
         case Cons(x, xs) => {
             if (circuit(x)) return broken else {
                 f(x, foldRight(xs, z)(f))
@@ -209,7 +210,7 @@ object List
     }
 
     def product(ds: List[Double]): Double = ds match {
-        case NilList => 1.0
+        case Nil => 1.0
         case Cons(0.0, _) => 0.0
         case Cons(x, xs) => x * product(xs)
     }
@@ -220,13 +221,13 @@ object List
     //  implementation if the List is Nil? We’ll return to this question in the next chapter
     def tail2[A](as: List[A]): List[A] = as match {
         case Cons(_, xs) => xs
-        case NilList => NilList
+        case Nil => Nil
     }
 
     /** Change the head of list    */
     def setHead[A](head: A, list: List[A]): List[A] = list match {
         case Cons(_, xs) => Cons(head, xs)
-        case NilList => Cons(head, NilList)
+        case Nil => Cons(head, Nil)
     }
 
     //    /**
@@ -244,7 +245,7 @@ object List
     //    }
     def drop[A](l: List[A], removeCount: Int): List[A] = l match {
         case Cons(x, xs) => if (removeCount > 0) drop[A](xs, removeCount - 1) else l
-        case NilList => NilList
+        case Nil => Nil
     }
 
 
@@ -257,7 +258,7 @@ object List
 
 
     def drop3[A](l: List[A], n: Int): List[A] = if (n <= 0) l else l match {
-        case NilList => NilList
+        case Nil => Nil
         case Cons(_, t) => drop(t, n - 1)
     }
 
@@ -271,9 +272,12 @@ object List
         case Cons(x, xs) => {
             if (f(x)) dropWhile(xs)(f) else l
         }
-        case NilList => NilList
+        case Nil => Nil
     }
 
-
+    def iterate[A](l: List[A]): List[A] = l match {
+        case Nil => Nil
+        case Cons(head, tail) => Cons(head, iterate(tail))
+    }
 }
 
