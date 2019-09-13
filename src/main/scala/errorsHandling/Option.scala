@@ -87,6 +87,12 @@ object Option {
      * the collections hierarchy. */
     def empty[A]: Option[A] = None
 
+    /** ': =>' indicates that the argument is of type B, but won’t be
+        evaluated until it’s needed by the function.      */
+    def Try[A](a : => A) : Option[A] = {
+        try{Some(a)} catch {case e:Exception => None}
+    }
+
     /*
    Combines a list of Options into one Option containing
         a list of all the Some values in the original list. If the original list contains None even
@@ -95,9 +101,22 @@ object Option {
  */
     def sequence[A](a: List[Option[A]]): Option[List[A]] = a match {
         case Nil => None
-        case head :: tl => head.flatMap((hh: A) => sequence(tl).map(hh :: _))
+        case head :: tl => head.flatMap((hh: A) => {
+            val value: Option[List[A]] = sequence(tl)
+            value.map(hh :: _)
+        })
     }
 
+
+    /** **********
+     * It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise
+     * Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an
+     * unfortunate consequence of Scala using subtyping to encode algebraic data types.
+     * // override def foldRight[B](z: B)(op: (A, B) => B): B
+     * *********/
+    def sequence_1[A](a: List[Option[A]]): Option[List[A]] = {
+        a.foldRight[Option[List[A]]](Some(Nil))((head, tail) => map2(head, tail)(_ :: _))
+    }
 
     /** *
      * Lift binary arguments func to two option argument func
@@ -110,36 +129,25 @@ object Option {
         a flatMap func
     }
 
+
     def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a match {
         case Nil => None
         case h :: t => map2(f(h), traverse(t)(f))(_ :: _)
     }
 
 
-    /** **********
-     * It can also be implemented using `foldRight` and `map2`. The type annotation on `foldRight` is needed here; otherwise
-     * Scala wrongly infers the result type of the fold as `Some[Nil.type]` and reports a type error (try it!). This is an
-     * unfortunate consequence of Scala using subtyping to encode algebraic data types.
-     * // override def foldRight[B](z: B)(op: (A, B) => B): B
-     * *********/
-    def sequence_1[A](a: List[Option[A]]): Option[List[A]] = {
-        a.foldRight[Option[List[A]]](Some(Nil))((x, y) => map2(x, y)(_ :: _))
+    def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
+        a.foldRight[Option[List[B]]](Some(Nil))((h: A, result: Option[List[B]]) => map2(f(h), result)(_ :: _))
     }
 
 
-    def liftTriple[A, B, C, D](a: Option[A], b: Option[B], c: Option[C])(f: (A, B, C) => D): Option[D] = {
 
+    def liftTriple[A, B, C, D](a: Option[A], b: Option[B], c: Option[C])(f: (A, B, C) => D): Option[D] = {
         val func: (A, B) => Option[D] = (aa: A, bb: B) => {
             val value: Option[D] = c map (cc => f(aa, bb, cc))
             value
         }
         return map2(a, b)(func).getOrElse(None)
-    }
-
-
-
-    def traverse2[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = {
-        a.foldRight[Option[List[B]]](Some(Nil))((h: A, result: Option[List[B]]) => map2(f(h), result)(_ :: _))
     }
 
     def sequenceByTraverse[A](a: List[Option[A]]) : Option[List[A]] ={
@@ -148,3 +156,6 @@ object Option {
 
 
 }
+
+
+
