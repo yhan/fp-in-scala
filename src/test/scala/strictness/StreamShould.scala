@@ -10,8 +10,24 @@ class StreamShould extends FunSuite{
 
     test("take n elements"){
         val stream = Stream(1,2,3,4,5,6)
-//        assertResult(Stream(1, 2))(stream.take(2))
+        assertResult(stream.take(2).toList2)(List(1,2))
+    }
 
-        print(stream.take(2).toList2)
+    test("take while"){
+        val stream = Stream(1,2,3,4,5,6)
+        assertResult(stream.takeWhile(_ < 2).toList2)(List(1))
+
+        assertResult(Stream(1))(stream.takeWhile(_ < 2)) // <= fail here
+    }
+
+
+    test("break as soon as found"){
+        val stream = Stream(1,2,3,4,5,6)
+        val exists = stream.exist2(x => {
+            println(x)
+            x == 2
+        })
+
+        assert(exists, "2 does exist in the stream")
     }
 }
