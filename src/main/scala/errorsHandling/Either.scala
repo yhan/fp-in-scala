@@ -1,6 +1,8 @@
 package errorsHandling
 
 
+
+
 trait Either[+E, +A] {
     def map[B](f: A => B): Either[E, B] = this match {
         case Left(e) => Left(e)
@@ -25,15 +27,34 @@ trait Either[+E, +A] {
     }
 
     def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
-        val func = (aa: A) => b.map(bb => f(aa, bb))
-        this.flatMap(func)
+            val func = (aa: A) => {
+                val mapped = b.map(bb => f(aa, bb))
+
+                mapped
+            }
+            this.flatMap(func)
     }
+
+//    def map3[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
+//
+//        val func = (aa: A) => {
+//            val m = b.map(bb => f(aa, bb))
+//            m match {
+//                case Left(value) => errors =  List[EE](value)
+//            }
+//            m
+//        }
+//
+//        val result = this.flatMap(func)
+//    }
 
     def map2_2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
         for {b <- b; // map
              a <- this // flatMap
         } yield f(a, b)
     }
+
+
 }
 
 object Either {
@@ -43,19 +64,19 @@ object Either {
         }
     }
 
-    //These should return the first error  that’s encountered, if there is one.
-    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = {
-        es.foldRight[Either[E, List[A]]](Right(Nil))((h, t) => h.map2(t)(_ :: _))
-    }
+//    //These should return the first error  that’s encountered, if there is one.
+//    def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = {
+//        es.foldRight[Either[E, List[A]]](Right(Nil))((h, t) => h.map2(t)(_ :: _))
+//    }
 
     def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = es match {
         case Nil => Right(Nil)
         case ::(head, tl) => head.flatMap(h => sequence(tl).map(h :: _))
     }
 
-    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = {
-        as.foldRight[Either[E, List[B]]](Right(Nil))((h, r) => f(h).map2(r)(_ :: _))
-    }
+//    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = {
+//        as.foldRight[Either[E, List[B]]](Right(Nil))((h, r) => f(h).map2(r)(_ :: _))
+//    }
 
     def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] = as match {
         case Nil => Right(Nil)
@@ -64,7 +85,16 @@ object Either {
 
 }
 
+
 case class Left[+E](value: E) extends Either[E, Nothing]
 
 case class Right[+A](value: A) extends Either[Nothing, A]
+
+
+
+
+
+
+
+
 

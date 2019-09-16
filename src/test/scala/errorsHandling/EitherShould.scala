@@ -19,4 +19,13 @@ class EitherShould extends FunSuite {
 //        val result = Either.Try(a.map2(b)((x, y) => x/y))
 //        assertResult(Left())(result)
     }
+
+
+//    test("Ctor person"){
+//        val p = Person.mkPerson(null, -42)
+//        assertResult(Left("Name is empty"))(p)
+//    }
 }
+
+
+
