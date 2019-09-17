@@ -92,4 +92,37 @@ class StreamShould extends FunSuite{
         val stream= Stream(1,2,3).flatMapByLeftFold(i => Stream(i, i))
         assertResult(Stream(1,1,2,2,3,3).toList2)(stream.toList2)
     }
+
+
+    test("ONE iterations"){
+        Stream(1,2,3,4).map((i) => {
+            println("map " + i)
+            i + 10
+        }).filter(i => {
+            println("filter " +  i)
+            i % 2 == 0
+        }).toList
+    }
+
+    test("Take 5 of an infinite stream"){
+        assertResult(Stream(42, 42).toList2)(Stream.constantByUnfolding(42).take(2).toList2)
+    }
+
+    test("incrementing stream") {
+        assertResult(List(42,43,44))(StreamExtensions.fromByUnfolding(42).take(3).toList2)
+    }
+
+    test("fibonacci stream"){
+        assertResult(List(0,1,1,2,3,5,8))(StreamExtensions.fibByUnfolding2.take(7).toList2)
+    }
+
+   test("unfold"){
+       val actual = Stream.unfold[Int, Int](1)(s => Option((s+1, s*2))).take(4).toList2
+       assertResult(List(2,3,5,9))(actual)
+   }
+
+    test("Repeating integer '1'"){
+        val actual = StreamExtensions.ones.take(3).toList2
+        assertResult(List(1,1,1))(actual)
+    }
 }

@@ -84,21 +84,13 @@ sealed trait Stream[+A] {
         case Cons(h, t) => t().foldLeft(f(z, h()))(f)
     }
 
-    def flatMapByRightFold[B](project: A => Stream[B]) : Stream[B] = {
+    def flatMapByRightFold[B](project: A => Stream[B]): Stream[B] = {
         foldRight(Stream.empty[B])((a, bStream) => project(a).append(bStream)) // <======= ** appending in reversed order comparing to flatMapByLeftFold **
     }
 
-    def flatMapByLeftFold[B](project: A => Stream[B]) : Stream[B] = {
+    def flatMapByLeftFold[B](project: A => Stream[B]): Stream[B] = {
         foldLeft(Stream.empty[B])((bStream, a) => bStream.append(project(a)))
     }
-
-    //    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
-//        case Nil => z
-//        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
-//    }
-
-
-
 
     /*The append method
 should be non-strict in its argument.*/
@@ -110,16 +102,11 @@ should be non-strict in its argument.*/
         foldRight(Stream.empty[B])((a, b) => Stream.cons(project(a), b))
     }
 
-    def filter(filter: A => Boolean ): Stream[A] = {
+    def filter(filter: A => Boolean): Stream[A] = {
         foldRight[Stream[A]](Stream.empty[A])((a, b) => {
-            if (filter(a)) Stream.cons(a, b)
-            else b
+            if (filter(a)) Stream.cons(a, b) else b
         })
     }
-
-
-
-//    def flatMap[B](f: A => Stream[B]): Stream[B] =
 }
 
 case object Empty extends Stream[Nothing]
@@ -140,6 +127,62 @@ evaluated until it’s needed by the function
     def empty[A]: Stream[A] = Empty
 
     def apply[A](as: A*): Stream[A] = if (as.isEmpty) empty else cons(as.head, apply(as.tail: _*))
+
+    def constant[A](a: A): Stream[A] = {
+        lazy val v: Stream[A] = cons(a, v)
+        v
+    }
+
+    def constantByUnfolding[A](a: A): Stream[A] = {
+        Stream.unfold(a)(s => Some(s, s))
+    }
+
+    // Write a more general stream-building function called unfold. It takes an initial state,
+    // and a function for producing both the next state and the next value in the generated
+    // stream.
+    def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] = {
+        f(z) match {
+            case Some((a, s)) => cons(a, unfold(s)(f))
+            case None => empty[A]
+        }
+    }
 }
+
+object StreamExtensions {
+    /*
+    Produce infinite stream containing contiguous integers start from n
+     */
+    def from(n: Int): Stream[Int] = {
+        Stream.cons(n, from(n + 1))
+    }
+
+    /*
+    0,1,1,2,3,5,8
+    */ val fibs = {
+        def go(f0: Int, f1: Int): Stream[Int] = Stream.cons(f0, go(f1, f0 + f1))
+
+        go(0, 1)
+    }
+
+
+
+    val fibByUnfolding2  ={
+        Stream.unfold((0,1))(s => s match {
+            case (f0, f1) => Some(f0, (f1, f0+f1))
+        })
+    }
+
+    /*
+    Produce infinite stream containing contiguous integers start from n
+     */
+    def fromByUnfolding(n: Int): Stream[Int] = {
+        Stream.unfold(n)(s => Some((s, s+1)))
+    }
+
+    val ones = {
+        Stream.unfold(1)(s => Some(s, s))
+    }
+}
+
 
 
