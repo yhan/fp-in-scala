@@ -24,13 +24,54 @@ sealed trait Stream[+A] {
     /*
     returning all starting elements of a Stream that
     match the given predicate.
-     */
-    def takeWhile(p: A => Boolean): Stream[A] = this match {
+     */ def takeWhile(p: A => Boolean): Stream[A] = this match {
         case Empty => Empty
         case Cons(h, t) => {
-            if (p(h())) Stream.cons(h(),  t().takeWhile(p))
-            else Empty
+            if (p(h())) Stream.cons(h(), t().takeWhile(p)) else Empty
         }
+    }
+
+    def takeWhile2(p: A => Boolean): Stream[A] = {
+        foldRight(Stream.empty[A])((x, stream) => {
+            if (p(x)) Stream.cons(x, stream) else Stream.empty[A]
+        })
+    }
+
+    /*
+     Evaluation will stop as soon as predicate(x) yields true in recursion
+     */ def exist2(predicate: A => Boolean): Boolean = {
+        foldRight(false)((x, y) => {
+            predicate(x) || y
+        })
+    }
+
+    /*
+     Evaluation will stop as soon as predicate(x) yields true in recursion
+     */ def exist(predicate: A => Boolean): Boolean = this match {
+        case Empty => false
+        case Cons(h, t) => predicate(h()) || t().exist(predicate)
+    }
+
+    def forAll(p: A => Boolean): Boolean = {
+        foldRight(true)((x, y) => {
+            println(x)
+            p(x) && y
+        })
+    }
+
+    def forAll2(p: A => Boolean): Boolean = this match {
+        case Empty => true
+        case Cons(h, t) => p(h()) && t().forAll(p)
+    }
+
+    def headOption(): Option[A] = this match {
+        case Empty => None
+        case Cons(h, t) => Some(h())
+    }
+
+    //Hard: Implement headOption using foldRight.
+    def headOption2(): Option[A] = {
+        foldRight(None: Option[A])((h: A, _) => Some(h))
     }
 
     def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
@@ -38,19 +79,47 @@ sealed trait Stream[+A] {
         case Cons(h, t) => f(h(), t().foldRight(z)(f))
     }
 
-    /*
-     Evaluation will stop as soon as predicate(x) yields true in recursion
-     */
-    def exist2(predicate: A => Boolean): Boolean = {
-        foldRight(false)((x, y) => {
-            predicate(x) || y
+    def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
+        case Empty => z
+        case Cons(h, t) => t().foldLeft(f(z, h()))(f)
+    }
+
+    def flatMapByRightFold[B](project: A => Stream[B]) : Stream[B] = {
+        foldRight(Stream.empty[B])((a, bStream) => project(a).append(bStream)) // <======= ** appending in reversed order comparing to flatMapByLeftFold **
+    }
+
+    def flatMapByLeftFold[B](project: A => Stream[B]) : Stream[B] = {
+        foldLeft(Stream.empty[B])((bStream, a) => bStream.append(project(a)))
+    }
+
+    //    def foldLeft[A, B](as: List[A], z: B)(f: (B, A) => B): B = as match {
+//        case Nil => z
+//        case Cons(x, xs) => foldLeft(xs, f(z, x))(f)
+//    }
+
+
+
+
+    /*The append method
+should be non-strict in its argument.*/
+    def append[B >: A](s: => Stream[B]): Stream[B] = {
+        foldRight(s)((h, t) => Stream.cons(h, t))
+    }
+
+    def map[B](project: A => B): Stream[B] = {
+        foldRight(Stream.empty[B])((a, b) => Stream.cons(project(a), b))
+    }
+
+    def filter(filter: A => Boolean ): Stream[A] = {
+        foldRight[Stream[A]](Stream.empty[A])((a, b) => {
+            if (filter(a)) Stream.cons(a, b)
+            else b
         })
     }
 
-    def exist(predicate: A => Boolean): Boolean = this match {
-        case Empty => false
-        case Cons(h, t) => predicate(h()) || t().exist(predicate)
-    }
+
+
+//    def flatMap[B](f: A => Stream[B]): Stream[B] =
 }
 
 case object Empty extends Stream[Nothing]
