@@ -16,8 +16,15 @@ class StreamShould extends FunSuite{
     test("take while"){
         val stream = Stream(1,2,3,4,5,6)
         assertResult(stream.takeWhile(_ < 2).toList2)(List(1))
-//        assertResult(Stream(1))(stream.takeWhile(_ < 2)) // <= fail here
+        //        assertResult(Stream(1))(stream.takeWhile(_ < 2)) // <= fail here
     }
+
+    test("take while by unfolding"){
+        val stream = Stream(1,2,3,4,5,6)
+        assertResult(stream.takeWhileByUnfolding(_ < 2).toList2)(List(1))
+    }
+
+
 
     test("break as soon as found"){
         val stream = Stream(1,2,3,4,5,6)
@@ -73,7 +80,7 @@ class StreamShould extends FunSuite{
     }
 
     test("double Ints stream"){
-        val doubled = Stream(1,2,3).map( 2*_)
+        val doubled = Stream(1,2,3).mapByUnfolding( 2*_)
         assertResult(List(2,4,6))(doubled.toList2)
     }
 
@@ -124,5 +131,35 @@ class StreamShould extends FunSuite{
     test("Repeating integer '1'"){
         val actual = StreamExtensions.ones.take(3).toList2
         assertResult(List(1,1,1))(actual)
+    }
+
+    test("take by unfolding"){
+        val part = StreamExtensions.ones.takeByUnfolding(3).toList2
+        assertResult(List(1,1,1))(part)
+    }
+
+    test("Zipping two streams"){
+        val s1 = Stream(1,2,3)
+        val s2 = Stream (4,5,6,7)
+        val zipped =  s1.ZipWith[Int, Int](s2)((x: Int, y: Int) => x*y)
+        assertResult(List(1*4, 2*5, 3*6))(zipped.toList2)
+    }
+
+    test("Zipping ALL (when you can )"){
+        val s1 = Stream(1,2,3)
+        val s2 = Stream ("hello", "world")
+        val zipped =  s1.ZipAll(s2)
+
+        assertResult(List((Some(1), Some("hello")), (Some(2), Some("world")), (Some(3), None)))(zipped.toList2)
+
+    }
+
+    test("Zipping ALL (when you can ) - 2"){
+        val s1 = Stream(1,2,3)
+        val s2 = Stream ("hello", "world", "scala", "is", "fantastic")
+        val zipped =  s1.ZipAll(s2)
+
+        assertResult(List((Some(1), Some("hello")), (Some(2), Some("world")), (Some(3), Some("scala")), (None, Some("is")), (None, Some("fantastic"))))(zipped.toList2)
+
     }
 }

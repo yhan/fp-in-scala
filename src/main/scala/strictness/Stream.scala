@@ -1,6 +1,40 @@
 package strictness
 
 sealed trait Stream[+A] {
+    def ZipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+        Stream.unfold((this, s2))(s => s match {
+            case (Cons(h, t), Cons(h2, t2)) => {
+                val current = (Some(h()), Some(h2()))
+                val nextState = (t(), t2())
+                Some((current, nextState))
+            }
+            case (Empty, Cons(h2, t2)) => {
+                val current = (None, Some(h2()))
+                val nextState = (Empty, t2())
+                Some(current, nextState)
+            }
+            case (Cons(h, t), Empty) => {
+                val current = (Some(h()), None)
+                val nextState = (t(), Empty)
+                Some(current, nextState)
+            }
+            case (Empty, Empty) => None
+        })
+    }
+
+    def ZipWith[B, C](s2: Stream[B])( f: (A, B) => C) : Stream[C] = {
+        Stream.unfold((this, s2) )(s => s match {
+            case (Cons(h, t), Cons(h2, t2)) => {
+                val current = f(h(), h2())
+                val nextState = (t(), t2())
+                Some((current, nextState))
+            }
+            case (Empty, _) => None
+            case (_, Empty) => None
+        })
+    }
+
+
     def toList: List[A] = this match {
         case Empty => List()
         case Cons(h, t) => h() :: t().toList
@@ -21,14 +55,39 @@ sealed trait Stream[+A] {
         case _ => Stream.empty
     }
 
+    def takeByUnfolding(n: Int): Stream[A] ={
+        Stream.unfold((this, n))(s => s match {
+            case (Empty, _) => None
+            case (Cons(h, t), count) => {
+                if(count > 0)
+                    Some((h(), (t(), count - 1)))
+                else
+                    None
+            }
+        })
+    }
+
     /*
     returning all starting elements of a Stream that
     match the given predicate.
-     */ def takeWhile(p: A => Boolean): Stream[A] = this match {
+     */
+    def takeWhile(p: A => Boolean): Stream[A] = this match {
         case Empty => Empty
         case Cons(h, t) => {
             if (p(h())) Stream.cons(h(), t().takeWhile(p)) else Empty
         }
+    }
+
+    def takeWhileByUnfolding(p: A => Boolean): Stream[A] = {
+        Stream.unfold(this)(s => s match {
+            case Empty => None
+            case Cons(h, t)   =>  {
+                if(p(h()))
+                    Some(h(), t())
+                else
+                    None
+            }
+        })
     }
 
     def takeWhile2(p: A => Boolean): Stream[A] = {
@@ -100,6 +159,13 @@ should be non-strict in its argument.*/
 
     def map[B](project: A => B): Stream[B] = {
         foldRight(Stream.empty[B])((a, b) => Stream.cons(project(a), b))
+    }
+
+    def mapByUnfolding[B](project: A => B) : Stream[B] =  {
+        Stream.unfold(this)(s => s match {
+            case Empty => None
+            case Cons(h, t) => Some((project(h()), t()))
+        })
     }
 
     def filter(filter: A => Boolean): Stream[A] = {
