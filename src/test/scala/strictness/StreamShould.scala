@@ -160,6 +160,35 @@ class StreamShould extends FunSuite{
         val zipped =  s1.ZipAll(s2)
 
         assertResult(List((Some(1), Some("hello")), (Some(2), Some("world")), (Some(3), Some("scala")), (None, Some("is")), (None, Some("fantastic"))))(zipped.toList2)
+    }
 
+    test("has subsequence "){
+        val b : Boolean = Stream(1,2,3,4,5,6).hasSubsequence(Stream(4,5))
+        assert(b)
+    }
+
+    test("Stream2 is subsequence of Stream1"){
+        val has = Stream(1,2,3,45,6,8).hasSubsequence(Stream(2,3, 45))
+        assert(has)
+    }
+
+    test("Stream starts with another stream"){
+        val startWith = Stream(1,2,3,45,6,8).startWith(Stream(1,2,3))
+        assert(startWith)
+    }
+
+    test("Stream2 is subsequence of Stream1 - 2"){
+        val has = Stream(1,2,3,45,6,8).hasSubsequence2(Stream(2,3, 45))
+        assert(has)
+    }
+
+    test("Stream2 is subsequence of Stream1 - 3"){
+        val has = Stream(1,2,3).hasSubsequence2(Stream(1, 2,3))
+        assert(has)
+    }
+
+    test("Stream2 is NOT subsequence of Stream1 - 3"){
+        val has = Stream(1,2,3).hasSubsequence2(Stream(1, 2, 3, 4))
+        assert(!has)
     }
 }

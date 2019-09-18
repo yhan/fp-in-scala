@@ -1,6 +1,7 @@
 package strictness
 
 sealed trait Stream[+A] {
+
     def ZipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
         Stream.unfold((this, s2))(s => s match {
             case (Cons(h, t), Cons(h2, t2)) => {
@@ -22,8 +23,8 @@ sealed trait Stream[+A] {
         })
     }
 
-    def ZipWith[B, C](s2: Stream[B])( f: (A, B) => C) : Stream[C] = {
-        Stream.unfold((this, s2) )(s => s match {
+    def ZipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = {
+        Stream.unfold((this, s2))(s => s match {
             case (Cons(h, t), Cons(h2, t2)) => {
                 val current = f(h(), h2())
                 val nextState = (t(), t2())
@@ -55,14 +56,11 @@ sealed trait Stream[+A] {
         case _ => Stream.empty
     }
 
-    def takeByUnfolding(n: Int): Stream[A] ={
+    def takeByUnfolding(n: Int): Stream[A] = {
         Stream.unfold((this, n))(s => s match {
             case (Empty, _) => None
             case (Cons(h, t), count) => {
-                if(count > 0)
-                    Some((h(), (t(), count - 1)))
-                else
-                    None
+                if (count > 0) Some((h(), (t(), count - 1))) else None
             }
         })
     }
@@ -70,8 +68,7 @@ sealed trait Stream[+A] {
     /*
     returning all starting elements of a Stream that
     match the given predicate.
-     */
-    def takeWhile(p: A => Boolean): Stream[A] = this match {
+     */ def takeWhile(p: A => Boolean): Stream[A] = this match {
         case Empty => Empty
         case Cons(h, t) => {
             if (p(h())) Stream.cons(h(), t().takeWhile(p)) else Empty
@@ -81,11 +78,8 @@ sealed trait Stream[+A] {
     def takeWhileByUnfolding(p: A => Boolean): Stream[A] = {
         Stream.unfold(this)(s => s match {
             case Empty => None
-            case Cons(h, t)   =>  {
-                if(p(h()))
-                    Some(h(), t())
-                else
-                    None
+            case Cons(h, t) => {
+                if (p(h())) Some(h(), t()) else None
             }
         })
     }
@@ -152,8 +146,7 @@ sealed trait Stream[+A] {
     }
 
     /*The append method
-should be non-strict in its argument.*/
-    def append[B >: A](s: => Stream[B]): Stream[B] = {
+should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Stream[B] = {
         foldRight(s)((h, t) => Stream.cons(h, t))
     }
 
@@ -161,7 +154,7 @@ should be non-strict in its argument.*/
         foldRight(Stream.empty[B])((a, b) => Stream.cons(project(a), b))
     }
 
-    def mapByUnfolding[B](project: A => B) : Stream[B] =  {
+    def mapByUnfolding[B](project: A => B): Stream[B] = {
         Stream.unfold(this)(s => s match {
             case Empty => None
             case Cons(h, t) => Some((project(h()), t()))
@@ -172,6 +165,46 @@ should be non-strict in its argument.*/
         foldRight[Stream[A]](Stream.empty[A])((a, b) => {
             if (filter(a)) Stream.cons(a, b) else b
         })
+    }
+
+    def startWith[A](sub: Stream[A]): Boolean = (this, sub) match {
+        case (Empty, y) => y == Empty
+        case (_, Empty) => true
+        case (Cons(h, t), Cons(h2, t2)) => {
+            if (h() == h2()) t().startWith(t2()) else false
+        }
+    }
+
+    def hasSubsequence2[A](sub: Stream[A]): Boolean = this match {
+
+        case Cons(h, t) /*if(t() != Empty)*/=> {
+            try{
+                if (Cons(h, t).startWith(sub)) true
+                else t().startWith(sub)
+            }catch {
+                case ex : Exception => {
+                    println(h())
+                    println(ex)
+
+                    false
+                }
+            }
+        }
+        case Empty => false
+    }
+
+    def hasSubsequence[A](sub: Stream[A]): Boolean = (this, sub) match {
+        case (Cons(h, t), Cons(h2, t2)) => {
+            if (h() == h2())
+                t().startWith(t2())
+            else
+                t().hasSubsequence(sub)
+        }
+        case (Empty, y) => {
+            println("error")
+            y == Empty
+        }
+        case (_, Empty) => true
     }
 }
 
@@ -217,8 +250,7 @@ evaluated until it’s needed by the function
 object StreamExtensions {
     /*
     Produce infinite stream containing contiguous integers start from n
-     */
-    def from(n: Int): Stream[Int] = {
+     */ def from(n: Int): Stream[Int] = {
         Stream.cons(n, from(n + 1))
     }
 
@@ -231,18 +263,16 @@ object StreamExtensions {
     }
 
 
-
-    val fibByUnfolding2  ={
-        Stream.unfold((0,1))(s => s match {
-            case (f0, f1) => Some(f0, (f1, f0+f1))
+    val fibByUnfolding2 = {
+        Stream.unfold((0, 1))(s => s match {
+            case (f0, f1) => Some(f0, (f1, f0 + f1))
         })
     }
 
     /*
     Produce infinite stream containing contiguous integers start from n
-     */
-    def fromByUnfolding(n: Int): Stream[Int] = {
-        Stream.unfold(n)(s => Some((s, s+1)))
+     */ def fromByUnfolding(n: Int): Stream[Int] = {
+        Stream.unfold(n)(s => Some((s, s + 1)))
     }
 
     val ones = {
