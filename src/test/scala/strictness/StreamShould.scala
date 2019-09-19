@@ -24,8 +24,6 @@ class StreamShould extends FunSuite{
         assertResult(stream.takeWhileByUnfolding(_ < 2).toList2)(List(1))
     }
 
-
-
     test("break as soon as found"){
         val stream = Stream(1,2,3,4,5,6)
         val exists = stream.exist(x => {
@@ -148,7 +146,7 @@ class StreamShould extends FunSuite{
     test("Zipping ALL (when you can )"){
         val s1 = Stream(1,2,3)
         val s2 = Stream ("hello", "world")
-        val zipped =  s1.ZipAll(s2)
+        val zipped =  s1.zipAll(s2)
 
         assertResult(List((Some(1), Some("hello")), (Some(2), Some("world")), (Some(3), None)))(zipped.toList2)
 
@@ -157,7 +155,7 @@ class StreamShould extends FunSuite{
     test("Zipping ALL (when you can ) - 2"){
         val s1 = Stream(1,2,3)
         val s2 = Stream ("hello", "world", "scala", "is", "fantastic")
-        val zipped =  s1.ZipAll(s2)
+        val zipped =  s1.zipAll(s2)
 
         assertResult(List((Some(1), Some("hello")), (Some(2), Some("world")), (Some(3), Some("scala")), (None, Some("is")), (None, Some("fantastic"))))(zipped.toList2)
     }
@@ -170,6 +168,16 @@ class StreamShould extends FunSuite{
     test("Stream2 is subsequence of Stream1"){
         val has = Stream(1,2,3,45,6,8).hasSubsequence(Stream(2,3, 45))
         assert(has)
+    }
+
+    test("Stream starts with another stream 2"){
+        val startWith = Stream(1,2,3,45,6,8).startWith2(Stream(1,2,3))
+        assert(startWith)
+    }
+
+    test("Stream does not starts with another stream 2"){
+        val startWith = Stream(1,2,3,45,6,8).startWith2(Stream(1,42,3))
+        assert(!startWith)
     }
 
     test("Stream starts with another stream"){

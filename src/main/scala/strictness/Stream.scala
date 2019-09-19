@@ -2,26 +2,6 @@ package strictness
 
 sealed trait Stream[+A] {
 
-    def ZipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
-        Stream.unfold((this, s2))(s => s match {
-            case (Cons(h, t), Cons(h2, t2)) => {
-                val current = (Some(h()), Some(h2()))
-                val nextState = (t(), t2())
-                Some((current, nextState))
-            }
-            case (Empty, Cons(h2, t2)) => {
-                val current = (None, Some(h2()))
-                val nextState = (Empty, t2())
-                Some(current, nextState)
-            }
-            case (Cons(h, t), Empty) => {
-                val current = (Some(h()), None)
-                val nextState = (t(), Empty)
-                Some(current, nextState)
-            }
-            case (Empty, Empty) => None
-        })
-    }
 
     def ZipWith[B, C](s2: Stream[B])(f: (A, B) => C): Stream[C] = {
         Stream.unfold((this, s2))(s => s match {
@@ -65,15 +45,6 @@ sealed trait Stream[+A] {
         })
     }
 
-    /*
-    returning all starting elements of a Stream that
-    match the given predicate.
-     */ def takeWhile(p: A => Boolean): Stream[A] = this match {
-        case Empty => Empty
-        case Cons(h, t) => {
-            if (p(h())) Stream.cons(h(), t().takeWhile(p)) else Empty
-        }
-    }
 
     def takeWhileByUnfolding(p: A => Boolean): Stream[A] = {
         Stream.unfold(this)(s => s match {
@@ -206,6 +177,47 @@ should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Str
         }
         case (_, Empty) => true
     }
+
+    def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] = {
+        Stream.unfold((this, s2))(s => s match {
+            case (Cons(h, t), Cons(h2, t2)) => {
+                val current = (Some(h()), Some(h2()))
+                val nextState = (t(), t2())
+                Some((current, nextState))
+            }
+            case (Empty, Cons(h2, t2)) => {
+                val current = (None, Some(h2()))
+                val nextState = (Empty, t2())
+                Some(current, nextState)
+            }
+            case (Cons(h, t), Empty) => {
+                val current = (Some(h()), None)
+                val nextState = (t(), Empty)
+                Some(current, nextState)
+            }
+            case (Empty, Empty) => None
+        })
+    }
+    /*
+    returning all starting elements of a Stream that
+    match the given predicate.
+     */ def takeWhile(p: A => Boolean): Stream[A] = this match {
+        case Empty => Empty
+        case Cons(h, t) => {
+            if (p(h())) Stream.cons(h(), t().takeWhile(p)) else Empty
+        }
+    }
+
+    def startWith2[A](sub: Stream[A]): Boolean = {
+        // zip all
+        // iterate take while
+        // one is empty
+
+        this.zipAll(sub).takeWhile(x => {
+            val value: Option[A] = x._2
+            value.isDefined
+        }).forAll(x => x._1 == x._2)
+    }
 }
 
 case object Empty extends Stream[Nothing]
@@ -245,6 +257,8 @@ evaluated until it’s needed by the function
             case None => empty[A]
         }
     }
+
+
 }
 
 object StreamExtensions {
