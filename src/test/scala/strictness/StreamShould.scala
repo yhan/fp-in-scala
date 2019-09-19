@@ -161,12 +161,12 @@ class StreamShould extends FunSuite{
     }
 
     test("has subsequence "){
-        val b : Boolean = Stream(1,2,3,4,5,6).hasSubsequence(Stream(4,5))
+        val b : Boolean = Stream(1,2,3,4,5,6).hasSubsequence3(Stream(4,5))
         assert(b)
     }
 
     test("Stream2 is subsequence of Stream1"){
-        val has = Stream(1,2,3,45,6,8).hasSubsequence(Stream(2,3, 45))
+        val has = Stream(1,2,3,45,6,8).hasSubsequence3(Stream(2,3, 45))
         assert(has)
     }
 
@@ -186,17 +186,29 @@ class StreamShould extends FunSuite{
     }
 
     test("Stream2 is subsequence of Stream1 - 2"){
-        val has = Stream(1,2,3,45,6,8).hasSubsequence2(Stream(2,3, 45))
+        val has = Stream(1,2,3,45,6,8).hasSubsequence3(Stream(2,3, 45))
         assert(has)
     }
 
     test("Stream2 is subsequence of Stream1 - 3"){
-        val has = Stream(1,2,3).hasSubsequence2(Stream(1, 2,3))
+        val has = Stream(1,2,3).hasSubsequence3(Stream(1, 2,3))
         assert(has)
     }
 
     test("Stream2 is NOT subsequence of Stream1 - 3"){
-        val has = Stream(1,2,3).hasSubsequence2(Stream(1, 2, 3, 4))
+        val has = Stream(1,2,3).hasSubsequence3(Stream(1, 2, 3, 4))
         assert(!has)
+    }
+
+    test("Stream2 is subsequence of Stream1 - 4"){
+        val has = Stream(1,2,3,4,5).hasSubsequence3(Stream(1, 2, 3))
+        assert(has)
+    }
+
+    test( "tails should decompose stream from all to empty") {
+        val actual = Stream(1,2,3).tails
+
+        val what = for(x <- actual.toList2) yield x.toList2
+        assertResult(List(List(1,2,3), List(2,3), List(3), List()))(what)
     }
 }

@@ -1,5 +1,7 @@
 package strictness
 
+import strictness.Stream.{empty, unfold}
+
 sealed trait Stream[+A] {
 
 
@@ -30,11 +32,7 @@ sealed trait Stream[+A] {
         walk(this, List()).reverse
     }
 
-    def take(n: Int): Stream[A] = this match {
-        case Cons(h, t) if n > 1 => Stream.cons(h(), t().take(n - 1))
-        case Cons(h, _) if n == 1 => Stream.cons(h(), Stream.empty)
-        case _ => Stream.empty
-    }
+
 
     def takeByUnfolding(n: Int): Stream[A] = {
         Stream.unfold((this, n))(s => s match {
@@ -117,7 +115,8 @@ sealed trait Stream[+A] {
     }
 
     /*The append method
-should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Stream[B] = {
+should be non-strict in its argument.*/
+    def append[B >: A](s: => Stream[B]): Stream[B] = {
         foldRight(s)((h, t) => Stream.cons(h, t))
     }
 
@@ -147,13 +146,11 @@ should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Str
     }
 
     def hasSubsequence2[A](sub: Stream[A]): Boolean = this match {
-
-        case Cons(h, t) /*if(t() != Empty)*/=> {
-            try{
-                if (Cons(h, t).startWith(sub)) true
-                else t().startWith(sub)
-            }catch {
-                case ex : Exception => {
+        case Cons(h, t) /*if(t() != Empty)*/ => {
+            try {
+                if (Cons(h, t).startWith(sub)) true else t().startWith(sub)
+            } catch {
+                case ex: Exception => {
                     println(h())
                     println(ex)
 
@@ -166,10 +163,7 @@ should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Str
 
     def hasSubsequence[A](sub: Stream[A]): Boolean = (this, sub) match {
         case (Cons(h, t), Cons(h2, t2)) => {
-            if (h() == h2())
-                t().startWith(t2())
-            else
-                t().hasSubsequence(sub)
+            if (h() == h2()) t().startWith(t2()) else t().hasSubsequence(sub)
         }
         case (Empty, y) => {
             println("error")
@@ -198,6 +192,7 @@ should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Str
             case (Empty, Empty) => None
         })
     }
+
     /*
     returning all starting elements of a Stream that
     match the given predicate.
@@ -212,11 +207,49 @@ should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Str
         // zip all
         // iterate take while
         // one is empty
-
         this.zipAll(sub).takeWhile(x => {
             val value: Option[A] = x._2
             value.isDefined
         }).forAll(x => x._1 == x._2)
+    }
+
+    /*
+      Implement tails using unfold. For a given Stream, tails returns the Stream of suffixes
+      of the input sequence, starting with the original Stream. For example, given
+      Stream(1,2,3), it would return Stream(Stream(1,2,3), Stream(2,3), Stream(3), Stream()).
+  */
+    def tails: Stream[Stream[A]] = {
+        val allButHead = Stream.unfold[Stream[A], Stream[A]](this)(s => s match {
+            case Empty => None
+            case Cons(h, t) => {
+                Some((t(), t()))
+            }
+        })
+        Stream(this).append[Stream[A]](allButHead)
+    }
+
+        /*
+    The last element of `tails` is always the empty `Stream`, so we handle this as a special case, by appending it to the output.
+    */
+    def tails2: Stream[Stream[A]] =
+        unfold(this) {
+            case Empty => None
+            case s => Some((s, s drop 1))
+        } append Stream(empty)
+
+    def drop(i: Int) : Stream[A] = this match {
+        case Cons(h, t) => t()
+        case Empty => Empty
+    }
+
+    def take(n: Int): Stream[A] = this match {
+        case Cons(h, t) if n > 1 => Stream.cons(h(), t().take(n - 1))
+        case Cons(h, _) if n == 1 => Stream.cons(h(), Stream.empty)
+        case _ => Stream.empty
+    }
+
+    def hasSubsequence3[A](sub: Stream[A]) : Boolean = {
+        this.tails.exist(x => x.startWith(sub))
     }
 }
 
