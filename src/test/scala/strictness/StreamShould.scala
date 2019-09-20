@@ -2,6 +2,8 @@ package strictness
 
 import org.scalatest.FunSuite
 
+import scala.collection.immutable
+
 class StreamShould extends FunSuite{
     test("build list from stream") {
         val stream = Stream(1,2,3,4,5,6)
@@ -208,7 +210,30 @@ class StreamShould extends FunSuite{
     test( "tails should decompose stream from all to empty") {
         val actual = Stream(1,2,3).tails
 
-        val what = for(x <- actual.toList2) yield x.toList2
+        val what: immutable.Seq[List[Int]] = for(x <- actual.toList2) yield x.toList2
         assertResult(List(List(1,2,3), List(2,3), List(3), List()))(what)
     }
+
+    test("ScanRight: generalized `tails` function"){
+        val list = Stream(1,2,3).scanRight(0)(_+_).toList
+        assertResult(List(6,5,3,0))(list)
+    }
+
+    test("ScanRight: generalized `tails` function 2"){
+        val list = Stream(1,2,3,4).scanRight(0)(_+_).toList
+        assertResult(List(10,9,7,4,0))(list)
+    }
+
+    test("Can't find the element which satisfy a predicate"){
+        val result =  Stream(1,2,3,4,5,6).find(_ == 7)
+        assertResult(None)(result)
+    }
+
+    test("Can find the element which satisfy a predicate"){
+        val result =  Stream(1,2,3,4,5,6).find(_ == 6)
+        assertResult(Some(6))(result)
+    }
 }
+
+
+

@@ -146,9 +146,7 @@ object List
             case Nil => Nil
             case Cons(head, tail) => if (tail == Nil) {
                 return buffer
-            } else loop(tail, append(buffer, List[A] {
-                head
-            }))
+            } else loop(tail, append(buffer, List[A](head) ))
         }
 
         loop(source, newOne)

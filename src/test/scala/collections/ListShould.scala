@@ -108,4 +108,9 @@ import org.scalatest.FunSuite
 
       assert(appended == List[Int](1, 2, 3, 4, 5, 6, 7))
     }
+
+    test("init Should exclude the last element"){
+      val list  = List.init(List(1,2,3,4,5,6))
+      println(list)
+    }
   }

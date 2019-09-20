@@ -1,6 +1,9 @@
 package strictness
 
+import jdk.javadoc.internal.tool.Start
 import strictness.Stream.{empty, unfold}
+
+import scala.annotation.tailrec
 
 sealed trait Stream[+A] {
 
@@ -96,10 +99,6 @@ sealed trait Stream[+A] {
         foldRight(None: Option[A])((h: A, _) => Some(h))
     }
 
-    def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
-        case Empty => z
-        case Cons(h, t) => f(h(), t().foldRight(z)(f))
-    }
 
     def foldLeft[B](z: B)(f: (B, A) => B): B = this match {
         case Empty => z
@@ -228,14 +227,24 @@ should be non-strict in its argument.*/
         Stream(this).append[Stream[A]](allButHead)
     }
 
-        /*
+    def scanRight[B](start: B)(f: (A, => B) => B) : Stream[B] = {
+        val collection = this.tails
+        collection.map(s => s.foldRight(start)(f))
+    }
+
+    def foldRight[B](z: => B)(f: (A, => B) => B): B = this match {
+        case Empty => z
+        case Cons(h, t) => f(h(), t().foldRight(z)(f))
+    }
+
+    /*
     The last element of `tails` is always the empty `Stream`, so we handle this as a special case, by appending it to the output.
     */
     def tails2: Stream[Stream[A]] =
         unfold(this) {
             case Empty => None
             case s => Some((s, s drop 1))
-        } append Stream(empty)
+        }.append(Stream(empty))
 
     def drop(i: Int) : Stream[A] = this match {
         case Cons(h, t) => t()
@@ -251,6 +260,16 @@ should be non-strict in its argument.*/
     def hasSubsequence3[A](sub: Stream[A]) : Boolean = {
         this.tails.exist(x => x.startWith(sub))
     }
+
+    @annotation.tailrec
+    final def find(f: A => Boolean) : Option[A] = this match {
+        case Empty => None
+        case Cons(h, t) => {
+            if(f(h())) Some(h())
+            else t().find(f)
+        }
+    }
+
 }
 
 case object Empty extends Stream[Nothing]
