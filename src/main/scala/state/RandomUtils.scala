@@ -32,63 +32,36 @@ object RandomUtils {
         }
     }
 
-}
 
-trait RNG {
-    def nextInt: (Int, RNG)
-    def double(): (Double, RNG)
-}
+    type Rand[+A] = RNG => (A, RNG)
 
+    def unit[A](a: A): Rand[A] =
+        rng => (a, rng)
 
-case class SimpleRNG(seed: Long) extends RNG {
-    def nextInt: (Int, RNG) = {
-        val newSeed = (seed * 0x5DEECE66DL + 0xBL) & 0xFFFFFFFFFFFFL
-        val nextRNG = SimpleRNG(newSeed)
-        val n = (newSeed >>> 16).toInt
-        (n, nextRNG)
+    def nonNegativeInt(random: RNG) : (Int, RNG) = {
+        val (a, r) = random.nextInt
+        ((if(a<0) -a else a), r)
     }
+    /*
+    map for transforming the output of a state action without modifying the
+    state itself
+    */
+    def map[A,B](s: Rand[A])(f: A => B): Rand[B] =
+        rng => {
+            val (a, rng2) = s(rng)
+            (f(a), rng2)
+        }
 
+    def nonNegativeEven: Rand[Int] =
+        map(nonNegativeInt)(i => i - i % 2)
 
-    /*    Write a function to generate a Double between 0 and 1, not including 1. Note: You can
-            use Int.MaxValue to obtain the maximum positive integer value, and you can use
-            x.toDouble to convert an x: Int to a Double.*/
-    def double(): (Double, RNG) = {
-        val (int, nextRng) = this.nonNegativeInt()
-        val i = if (int == Int.MaxValue) (int - 1) else int
-        (i / Int.MaxValue.toDouble, nextRng)
+    /*
+    Write a function to generate a Double between 0 and 1, not including 1. Note: You can
+    use Int.MaxValue to obtain the maximum positive integer value, and you can use
+    x.toDouble to convert an x: Int to a Double.
+    def double(rng: RNG): (Double, RNG)
+     */
+    def double(random: RNG) : (Double, RNG) = {
+        map(nonNegativeInt)(a => (if(a == Int.MaxValue) a-1 else a) / Int.MaxValue.toDouble)(random)
     }
-
-    def nonNegativeInt(): (Int, RNG) = {
-        val (number, nextRng) = this.nextInt
-        (if(number<0) (-number+1) else number, nextRng)
-    }
-
-
-    // We generate an integer >= 0 and divide it by one higher than the
-    // maximum. This is just one possible solution.
-    def double2(): (Double, RNG) = {
-        val (i, r) = this.nonNegativeInt()
-        (i / (Int.MaxValue.toDouble + 1), r)
-    }
-
-    def intDouble(): ((Int, Double), RNG) = {
-        val (i, r) = this.nextInt
-        val (d, r2) = r.double()
-
-        ((i, d), r2)
-    }
-
-    def double3(rng: RNG): ((Double,Double,Double), RNG) = {
-        val(d, r) = rng.double()
-        val(d2, r2) = r.double()
-        val(d3, r3) = r2.double()
-
-        ((d, d2, d3), r3)
-    }
-
-    def doubleInt(): ((Double,Int), RNG)={
-        val ((i,d), r) = this.intDouble()
-        ((d, i), r)
-    }
-
 }

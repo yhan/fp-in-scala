@@ -20,7 +20,7 @@ class StatefulAPIShould extends FunSuite {
     }
 
     test("[0, 1) double"){
-        val random = SimpleRNG(444442)
+        val random = SimpleRNG(42)
 
         val tuples: immutable.Seq[(Double, RNG)] = Stream.fill(3)(random.double())
 
@@ -33,6 +33,12 @@ class StatefulAPIShould extends FunSuite {
         assert(allEqual)
     }
 
+
+    test("[0, 1) double - 2") {
+        val (d, r) = RandomUtils.double(SimpleRNG(42))
+        println(d, r)
+    }
+
     test("Integers generation") {
         val result = RandomUtils.ints(5)(SimpleRNG(42))
         val result2 = RandomUtils.ints2(5)(SimpleRNG(42))
@@ -41,5 +47,23 @@ class StatefulAPIShould extends FunSuite {
 
         println(result._1)
         println(result._2)
+    }
+
+    test("Random non negative even integer "){
+        val random = SimpleRNG(42)
+
+        def iterate(r: RNG, count: Int):Unit = {
+            if(count == 0) {
+                return
+            }
+            val (a, rNext) = RandomUtils.nonNegativeEven(r)
+            println(a, rNext)
+            assert(a%2 == 0, "Should be even integer")
+            assert(a>=0, "Should be positive or 0")
+
+            iterate(rNext, count - 1)
+        }
+
+        iterate(random, 10)
     }
 }
