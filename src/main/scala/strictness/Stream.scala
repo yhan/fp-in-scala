@@ -1,9 +1,6 @@
 package strictness
 
-import jdk.javadoc.internal.tool.Start
 import strictness.Stream.{empty, unfold}
-
-import scala.annotation.tailrec
 
 sealed trait Stream[+A] {
 
@@ -34,7 +31,6 @@ sealed trait Stream[+A] {
 
         walk(this, List()).reverse
     }
-
 
 
     def takeByUnfolding(n: Int): Stream[A] = {
@@ -114,8 +110,7 @@ sealed trait Stream[+A] {
     }
 
     /*The append method
-should be non-strict in its argument.*/
-    def append[B >: A](s: => Stream[B]): Stream[B] = {
+should be non-strict in its argument.*/ def append[B >: A](s: => Stream[B]): Stream[B] = {
         foldRight(s)((h, t) => Stream.cons(h, t))
     }
 
@@ -216,8 +211,7 @@ should be non-strict in its argument.*/
       Implement tails using unfold. For a given Stream, tails returns the Stream of suffixes
       of the input sequence, starting with the original Stream. For example, given
       Stream(1,2,3), it would return Stream(Stream(1,2,3), Stream(2,3), Stream(3), Stream()).
-  */
-    def tails: Stream[Stream[A]] = {
+  */ def tails: Stream[Stream[A]] = {
         val allButHead = Stream.unfold[Stream[A], Stream[A]](this)(s => s match {
             case Empty => None
             case Cons(h, t) => {
@@ -227,7 +221,7 @@ should be non-strict in its argument.*/
         Stream(this).append[Stream[A]](allButHead)
     }
 
-    def scanRight[B](start: B)(f: (A, => B) => B) : Stream[B] = {
+    def scanRight[B](start: B)(f: (A, => B) => B): Stream[B] = {
         val collection = this.tails
         collection.map(s => s.foldRight(start)(f))
     }
@@ -239,14 +233,11 @@ should be non-strict in its argument.*/
 
     /*
     The last element of `tails` is always the empty `Stream`, so we handle this as a special case, by appending it to the output.
-    */
-    def tails2: Stream[Stream[A]] =
-        unfold(this) {
-            case Empty => None
-            case s => Some((s, s drop 1))
-        }.append(Stream(empty))
+    */ def tails2: Stream[Stream[A]] = unfold(this) { case Empty => None
+    case s => Some((s, s drop 1))
+    }.append(Stream(empty))
 
-    def drop(i: Int) : Stream[A] = this match {
+    def drop(i: Int): Stream[A] = this match {
         case Cons(h, t) => t()
         case Empty => Empty
     }
@@ -257,16 +248,14 @@ should be non-strict in its argument.*/
         case _ => Stream.empty
     }
 
-    def hasSubsequence3[A](sub: Stream[A]) : Boolean = {
+    def hasSubsequence3[A](sub: Stream[A]): Boolean = {
         this.tails.exist(x => x.startWith(sub))
     }
 
-    @annotation.tailrec
-    final def find(f: A => Boolean) : Option[A] = this match {
+    @annotation.tailrec final def find(f: A => Boolean): Option[A] = this match {
         case Empty => None
         case Cons(h, t) => {
-            if(f(h())) Some(h())
-            else t().find(f)
+            if (f(h())) Some(h()) else t().find(f)
         }
     }
 
