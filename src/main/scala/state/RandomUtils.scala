@@ -1,6 +1,7 @@
 package state
 
 import scala.annotation.tailrec
+import scala.collection.immutable
 
 object RandomUtils {
 
@@ -58,15 +59,6 @@ object RandomUtils {
         map(nonNegativeInt)(a => (if (a == Int.MaxValue) a - 1 else a) / Int.MaxValue.toDouble)(random)
     }
 
-    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-        rng => {
-            val (a, r) = ra(rng)
-            val (b, rNext) = rb(r)
-            val c = f(a, b)
-            (c, rNext)
-        }
-    }
-
     def nextInt(rng: RNG): (Int, RNG) = {
         rng.nextInt
     }
@@ -86,5 +78,46 @@ object RandomUtils {
     def doubleInt(rng: RNG) : ((Double, Int), RNG) = {
         both(nextDouble,  nextInt)(rng)
     }
+
+    /*Implement sequence for combining a List of transitions into a single
+    transition.
+
+    !!!!!!!! BUG !!!!!!! why this function does not generate changing RNG (rNext)
+
+    */
+    def sequence[A](fs: List[Rand[A]]): Rand[List[A]] = {
+            rng => {
+                fs.foldRight((List[A](), rng))((rand, state) => {
+                     val (next, rNext)  = rand(state._2)
+                     (next :: state._1, rNext)
+                })
+            }
+    }
+
+    def ints3(count: Int)(rng: RNG): (List[Int], RNG) = {
+        val listOfFactory: List[Rand[Int]] = List.fill[Rand[Int]](count)(nextInt)
+        sequence(listOfFactory)(rng)
+    }
+
+    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+        rng => {
+            val (a, r) = ra(rng)
+            val (b, rNext) = rb(r)
+            val c = f(a, b)
+            (c, rNext)
+        }
+    }
+
+    // In `sequence`, the base case of the fold is a `unit` action that returns
+    // the empty list. At each step in the fold, we accumulate in `acc`
+    // and `f` is the current element in the list.
+    // `map2(f, acc)(_ :: _)` results in a value of type `Rand[List[A]]`
+    // We map over that to prepend (cons) the element onto the accumulated list.
+    //
+    // We are using `foldRight`. If we used `foldLeft` then the values in the
+    // resulting list would appear in reverse order. It would be arguably better
+    // to use `foldLeft` followed by `reverse`. What do you think?
+    def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
+        fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
 
 }

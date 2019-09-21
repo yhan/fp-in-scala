@@ -40,13 +40,17 @@ class StatefulAPIShould extends FunSuite {
     }
 
     test("Integers generation") {
-        val result = RandomUtils.ints(5)(SimpleRNG(42))
-        val result2 = RandomUtils.ints2(5)(SimpleRNG(42))
+//        val result = RandomUtils.ints(5)(SimpleRNG(42))
+//        val result2 = RandomUtils.ints2(5)(SimpleRNG(42))
+        val result3 = RandomUtils.ints3(5)(SimpleRNG(42))
 
-        assertResult(result._1.reverse)(result2._1)
+//        assertResult(result._1.reverse)(result2._1)
 
-        println(result._1)
-        println(result._2)
+        println(result3._1)
+        println(result3._2)
+
+//        println(result._1)
+//        println(result._2)
     }
 
     test("Random non negative even integer "){
