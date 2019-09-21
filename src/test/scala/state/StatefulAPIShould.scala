@@ -35,7 +35,7 @@ class StatefulAPIShould extends FunSuite {
 
 
     test("[0, 1) double - 2") {
-        val (d, r) = RandomUtils.double(SimpleRNG(42))
+        val (d, r) = RandomUtils.nextDouble(SimpleRNG(42))
         println(d, r)
     }
 
@@ -65,5 +65,11 @@ class StatefulAPIShould extends FunSuite {
         }
 
         iterate(random, 10)
+    }
+
+    test("use 'Combining state actions' to build intDouble "){
+        println(RandomUtils.intDouble(SimpleRNG(42)))
+        println(SimpleRNG(42).intDouble())
+
     }
 }
