@@ -40,13 +40,6 @@ object RandomUtils {
         ((if (a < 0) -a else a), r)
     }
 
-    /*
-    map for transforming the output of a state action without modifying the
-    state itself
-    */ def map[A, B](s: Rand[A])(f: A => B): Rand[B] = rng => {
-        val (a, rng2) = s(rng)
-        (f(a), rng2)
-    }
 
     def nonNegativeEven: Rand[Int] = map(nonNegativeInt)(i => i - i % 2)
 
@@ -99,14 +92,6 @@ object RandomUtils {
         sequence(listOfFactory)(rng)
     }
 
-    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-        rng => {
-            val (a, r) = ra(rng)
-            val (b, rNext) = rb(r)
-            val c = f(a, b)
-            (c, rNext)
-        }
-    }
 
     // In `sequence`, the base case of the fold is a `unit` action that returns
     // the empty list. At each step in the fold, we accumulate in `acc`
@@ -119,5 +104,64 @@ object RandomUtils {
     // to use `foldLeft` followed by `reverse`. What do you think?
     def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
         fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+
+
+    def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
+       rng => {
+           val (a, rng2) = f(rng)
+           g(a)(rng2)
+       }
+    }
+
+    def map2_2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+
+          flatMap(ra)(a => map(rb)(b => f(a, b)))
+    }
+
+    /*
+    map for transforming the output of a state action without modifying the
+    state itself
+    */def map[A, B](f: Rand[A])(g: A => B): Rand[B] = {
+        rng => {
+            val (a, rng2) = f(rng)
+            (g(a), rng2)
+        }
+    }
+
+    def map2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
+        rng => {
+            val (a, r) = ra(rng)
+            val (b, rNext) = rb(r)
+            val c = f(a, b)
+            (c, rNext)
+        }
+    }
+
+    def map_2[A, B](f: Rand[A])(g: A => B): Rand[B] = {
+        flatMap(f)( a=> unit(g(a)))
+    }
+
+    def nonNegativeLessThan2 (n: Int): Rand[Int] = {
+        flatMap(nonNegativeInt)(i => {
+            val mod = i % n
+            if(i + (n-1) - mod >= 0) {
+                unit(mod)
+            }
+            else {
+                nonNegativeLessThan2(n)
+            }
+        })
+    }
+
+    def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+        val (i, rng2) = nonNegativeInt(rng)
+        val mod = i % n
+        if (i + (n-1) - mod >= 0) {
+            (mod, rng2)
+        }
+        else {
+             nonNegativeLessThan(n)(rng)
+        }
+    }
 
 }
