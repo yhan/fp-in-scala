@@ -2,6 +2,7 @@ package state
 
 import scala.annotation.tailrec
 import scala.collection.immutable
+import RNG._
 
 object RandomUtils {
 
@@ -19,6 +20,8 @@ object RandomUtils {
         walk(List[Int](), rng, 0)
     }
 
+
+
     def ints2(count: Int)(rng: RNG): (List[Int], RNG) = {
         if (count == 0) {
             (List[Int](), rng)
@@ -29,11 +32,6 @@ object RandomUtils {
             (x :: list, r2)
         }
     }
-
-
-    type Rand[+A] = RNG => (A, RNG)
-
-    def unit[A](a: A): Rand[A] = rng => (a, rng)
 
     def nonNegativeInt(random: RNG): (Int, RNG) = {
         val (a, r) = random.nextInt
@@ -103,7 +101,7 @@ object RandomUtils {
     // resulting list would appear in reverse order. It would be arguably better
     // to use `foldLeft` followed by `reverse`. What do you think?
     def sequence2[A](fs: List[Rand[A]]): Rand[List[A]] =
-        fs.foldRight(unit(List[A]()))((f, acc) => map2(f, acc)(_ :: _))
+        fs.foldRight(unit(List[A]()))((f: Rand[A], acc: Rand[List[A]]) => map2(f, acc)(_ :: _))
 
 
     def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] = {
@@ -114,7 +112,6 @@ object RandomUtils {
     }
 
     def map2_2[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] = {
-
           flatMap(ra)(a => map(rb)(b => f(a, b)))
     }
 

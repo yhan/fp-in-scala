@@ -2,7 +2,9 @@ package errorsHandling
 
 
 
-
+/****
+    Structure represents either A or B
+*****/
 trait Either[+E, +A] {
     def map[B](f: A => B): Either[E, B] = this match {
         case Left(e) => Left(e)
@@ -29,29 +31,15 @@ trait Either[+E, +A] {
     def map2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
             val func = (aa: A) => {
                 val mapped = b.map(bb => f(aa, bb))
-
                 mapped
             }
             this.flatMap(func)
     }
 
-//    def map3[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
-//
-//        val func = (aa: A) => {
-//            val m = b.map(bb => f(aa, bb))
-//            m match {
-//                case Left(value) => errors =  List[EE](value)
-//            }
-//            m
-//        }
-//
-//        val result = this.flatMap(func)
-//    }
-
     def map2_2[EE >: E, B, C](b: Either[EE, B])(f: (A, B) => C): Either[EE, C] = {
-        for {b <- b; // map
-             a <- this // flatMap
-        } yield f(a, b)
+        for {bb <- b; // map
+             aa <- this // flatMap
+        } yield f(aa, bb)
     }
 
 
