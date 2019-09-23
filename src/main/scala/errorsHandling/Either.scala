@@ -41,8 +41,6 @@ trait Either[+E, +A] {
              aa <- this // flatMap
         } yield f(aa, bb)
     }
-
-
 }
 
 object Either {

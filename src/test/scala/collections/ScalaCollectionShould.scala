@@ -14,14 +14,14 @@ class ScalaCollectionShould extends FunSuite {
     test("Prepend with ++:") {
         val mainList = scala.collection.immutable.List(3, 2, 1)
         assertResult(List(3, 2, 1, 4, 5, 6))(mainList ++: List(4, 5, 6))
+        assertResult(List(3, 2, 1, 4, 5, 6))(mainList ::: List(4, 5, 6))
     }
-
 
     test("chain andThen") {
         val list = scala.collection.immutable.List(1, 2, 3, 4, 5, 6)
-        val minus: Int => Int = x => x - 1
-        val product: Int => Int = x => x * 2
-        val partialFunc: PartialFunction[Int, Int] = list andThen minus andThen product
+        val decrement: Int => Int = x => x - 1
+        val doubleIt: Int => Int = x => x * 2
+        val partialFunc: PartialFunction[Int, Int] = list andThen decrement andThen doubleIt
         assertResult(partialFunc(5))(10)
     }
 
@@ -109,7 +109,5 @@ class ScalaCollectionShould extends FunSuite {
         val filtered = list1.diff(list2)
 
         assertResult(List("word2", "word2", "word3", "word1"))(filtered)
-
     }
-
 }

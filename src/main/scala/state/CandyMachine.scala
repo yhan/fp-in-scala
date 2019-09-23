@@ -34,13 +34,15 @@ case class Machine(locked: Boolean, candies: Int, coins: Int){
 
 object Candy {
 
-    // je ne comprends rien!!!
+    // ***** je ne comprends rien!!! *****
     def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] = {
 
-        val list: List[State[Machine, Unit]] = inputs.map(State.modify[Machine] _ compose (update))
+        val function: Input => State[Machine, Unit] = State.modify[Machine] _ compose (update)
+        val list: List[State[Machine, Unit]] = inputs.map(function)
 
         val seq: State[Machine, List[Unit]] = State.sequence(list)
-            seq.flatMap(_ => State.get.map(s => (s.coins, s.candies)))
+            //  def flatMap[B](f: A => State[S, B]): State[S, B]
+        return seq.flatMap[(Int,Int)](_ => State.get.map(s => (s.coins, s.candies)))
     }
 
     def update = (i: Input) => (s: Machine) =>
