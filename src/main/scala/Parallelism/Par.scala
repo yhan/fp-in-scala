@@ -2,6 +2,7 @@ package fpinscala.parallelism
 
 import java.util.concurrent._
 
+import scala.collection.immutable.Stream.Empty
 import scala.language.implicitConversions
 
 object Par {
@@ -25,12 +26,6 @@ object Par {
 
     def sortPar(parList: Par[List[Int]]): Par[List[Int]] = {
         map(parList)(l => l.sorted)
-    }
-
-    def map[A, B](a: Par[A])(f: A => B): Par[B] = { es: ExecutorService => {
-        val futureB: Future[A] = a(es)
-        UnitFuture(f(futureB.get))
-    }
     }
 
     def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
@@ -60,7 +55,6 @@ object Par {
         a => lazyUnit(f(a))
     }
 
-
     // `map2` doesn't evaluate the call to `f` in a separate logical thread,
     // in accord with our design choice of having `fork` be the sole function in the API for controlling parallelism.
     // We can always do `fork(map2(a,b)(f))` if we want the evaluation of `f` to occur in a separate thread.
@@ -76,6 +70,43 @@ object Par {
         val bf: Future[B] = b(es)
         UnitFuture(f(af.get, bf.get))
     }
+
+
+    def map[A, B](a: Par[A])(f: A => B): Par[B] = { es: ExecutorService => {
+        val futureA: Future[A] = a(es)
+        val value: A = futureA.get
+        val t: UnitFuture[B] = UnitFuture(f(value))
+        t
+    }
+    }
+
+    def map3_2[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D):  Par[D] = (es : ExecutorService) => {
+       val g: C => Par[D] = (c: C) => map2[A, B,D](a,b)((aa, bb) => f(aa, bb, c))
+
+        val parParD: Par[Par[D]] = map(c)(c => g(c))
+        val futureParD: Future[Par[D]] = Par.run(es)(parParD)
+        val parD = futureParD.get()
+        Par.run(es)(parD)
+    }
+
+    def map3[A, B, C, D](a: Par[A], b: Par[B], c: Par[C])(f: (A, B, C) => D): Par[D] = (es : ExecutorService) => {
+        val futureA = a(es)
+        val futureB = b(es)
+        val futureC= c(es)
+
+        UnitFuture(f(futureA.get(), futureB.get(), futureC.get()))
+    }
+//
+//    def map4[A, B, C, D, E](a: Par[A], b: Par[B], c: Par[C], d: Par[D])(f: (A,B,C,D) => E) : Par[E] = (es: ExecutorService) => {
+//        val dToE = (dd: D) => map3(a, b, c)((x, y, z) => f(a, b, c, ))
+//    }
+
+//    def countNumberOfWordsOfEachParagraph(paragraphs: List[String]): Int = {
+//        if(paragraphs.length <= 1) {
+//            paragraphs.headOption.getOrElse(0)
+//        }
+//
+//    }
 
     def maxValueOf(list: IndexedSeq[Int], es: ExecutorService): Int = {
         if (list.length <= 1) list.headOption.getOrElse(0) else {
@@ -98,7 +129,8 @@ object Par {
             val (l: IndexedSeq[Int], r: IndexedSeq[Int]) = ints.splitAt(ints.length / 2)
             val value: Par[Int] = map2(unit(l), unit(r))((x, y) => sum(x, es) + sum(y, es))
 
-            Par.run(es)(fork(value)).get()
+            val value1: Future[Int] = Par.run(es)(fork(value))
+            value1.get()
         }
     }
 
