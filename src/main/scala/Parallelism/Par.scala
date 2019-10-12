@@ -54,6 +54,8 @@ object Par {
         a => lazyUnit(f(a))
     }
 
+    // 'a' wrapped in a Parallel promise 'Par[A]', we apply a function on `a` which is supposed to yield a `B` instance,
+    // we then obtain a Parallel promise of B instance
     def map[A, B](a: Par[A])(f: A => B): Par[B] = { es: ExecutorService => {
         val futureA: Future[A] = a(es)
         val value: A = futureA.get
@@ -99,42 +101,36 @@ object Par {
         UnitFuture(f(af.get, bf.get))
     }
 
-    def paragraphWords(paragraph: String)(es: ExecutorService): Int =  {
+    def paragraphWords(paragraph: String)(es: ExecutorService): Int = {
         val words = paragraph.split(' ').toList
 
-        def count(wordsCollection: List[String])(es: ExecutorService) : Int  = {
+        def count(wordsCollection: List[String])(es: ExecutorService): Int = {
             if (wordsCollection.length <= 1) {
-                return  1
-            } else {
-                val (l: List[String], r: List[String]) = wordsCollection.splitAt(wordsCollection.length)
-                val tasks: Par[Int] = map2(unit(l), unit(r))((x, y) => {
-                    if (x.length == 1) return 1
-                    if (y.length == 1) return 1
-                    else{
-                        count(l)(es) + count(r)( es)
-                    }
-                })
-
-                Par.run(es)(fork(tasks)).get()
+                return wordsCollection.headOption.getOrElse("").length
             }
+            val (l: List[String], r: List[String]) = wordsCollection.splitAt(wordsCollection.length)
+            val tasks: Par[Int] = map2(unit(l), unit(r))((x, y) => {
+                if (x.length == 1) return 1
+                if (y.length == 1) return 1 else {
+                    count(l)(es) + count(r)(es)
+                }
+            })
+
+            Par.run(es)(fork(tasks)).get()
         }
 
         count(words)(es)
     }
 
-    def countNumberOfWordsOfEachParagraph(paragraphs: List[String])(es: ExecutorService) : Int = {
+    def countNumberOfWordsOfAllParagraphs(paragraphs: List[String])(es: ExecutorService): Int = {
         if (paragraphs.length <= 1) {
-            val option: Option[String] = paragraphs.headOption
-            return option match {
-                case Some(value) => value.length
-                case None => 0
-            }
+            return paragraphs.headOption.getOrElse("").length
         }
         val (l, r) = paragraphs.splitAt(paragraphs.length)
         val parWordsCount: Par[Int] = map2(unit(l), unit(r))((a, b) => {
             if (a.length == 1) paragraphWords(a.head)(es)
-            if (b.length == 2) paragraphWords(b.head)(es)
-            countNumberOfWordsOfEachParagraph(a)(es) + countNumberOfWordsOfEachParagraph(b)(es)
+            if (b.length == 1) paragraphWords(b.head)(es)
+            countNumberOfWordsOfAllParagraphs(a)(es) + countNumberOfWordsOfAllParagraphs(b)(es)
         })
 
         Par.run(es)(fork(parWordsCount)).get()
@@ -166,6 +162,10 @@ object Par {
         }
     }
 
+    // `fork` should not affect the result of a parallel computation:
+    // fork(x) == x
+    // fork(x) should do the same thing as x, but asynchronously, in a logical thread separate from the main thread
+    // --------------------------------------------------------------------------------------------------------------------
     // This is the simplest and most natural implementation of `fork`,
     // but there are some problems with it
     // -- for one, the outer `Callable` will block waiting for the "inner" task to complete.
@@ -181,6 +181,9 @@ object Par {
         })
     }
 
+    def delay[A](fa: => Par[A]): Par[A] =
+        es => fa(es)
+
     def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 }
 
@@ -194,5 +197,4 @@ object Examples {
         val (l, r) = ints.splitAt(ints.length / 2) // Divide the sequence in half using the `splitAt` function.
         sum(l) + sum(r) // Recursively sum both halves and add the results together.}
     }
-
 }
