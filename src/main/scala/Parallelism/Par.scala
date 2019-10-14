@@ -5,6 +5,9 @@ import java.util.concurrent._
 import scala.language.implicitConversions
 
 object Par {
+    /*
+    A type alias
+     */
     type Par[A] = ExecutorService => Future[A]
 
     def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
@@ -25,6 +28,15 @@ object Par {
 
     def sortPar(parList: Par[List[Int]]): Par[List[Int]] = {
         map(parList)(l => l.sorted)
+    }
+
+    def sortPar2(parList: Par[List[Int]]): Par[List[Int]] = {
+        val bidon: Par[Unit] = unit(())
+        map2(parList, bidon)((a, _) => a.sorted)
+    }
+
+    def mapByMap2[A, B](a: Par[A])(f: A => B): Par[B] = {
+        map2(a, unit(()))((x, _) => f(x))
     }
 
     def parMap[A, B](ps: List[A])(f: A => B): Par[List[B]] = {
@@ -185,6 +197,11 @@ object Par {
         es => fa(es)
 
     def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
+
+    def asyncF[A,B](f: A => B): A => Par[B] = a => {
+        lazyUnit(f(a))
+    }
+
 }
 
 object Examples {

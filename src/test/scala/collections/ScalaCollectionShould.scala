@@ -66,19 +66,20 @@ class ScalaCollectionShould extends FunSuite {
         val product: List[Int] = List(1, 1, 2, 3, 5, 8, 13).scanLeft(1)((y, x) => y * x)
         assertResult(1 * 1 * 2 * 3 * 5 * 8 * 13)(product.last)
     }
+//
+//    @tailrec final def iterate(list: List[Int], print: Int => Unit): Any = list match {
+//        case ::(head, tl) => {
+//            print(head)
+//            iterate(tl, print)
+//        }
+//        case Nil =>
+//    }
 
-    @tailrec final def iterate(list: List[Int], print: Int => Unit): Any = list match {
-        case ::(head, tl) => {
-            print(head)
-            iterate(tl, print)
-        }
-        case Nil =>
-    }
-
-    test("iterate on ") {
-        val print: Int => Unit = x => println(x)
-        iterate(list, print)
-    }
+//
+//    test("iterate on ") {
+//        val print: Int => Unit = x => println(x)
+//        iterate(list, print)
+//    }
 
     val list = scala.collection.immutable.List(1, 2, 3, 4, 5, 6)
 
