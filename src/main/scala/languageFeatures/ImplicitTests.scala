@@ -8,13 +8,24 @@ object ImplicitTests extends App {
     }
 
     case class HiString(name: String){
-        def HiString() ={
+        def sayHi() ={
             println("Hi " +  name)
         }
     }
 
-    // Extend the java.lang.String, giving it the capacity to do HiString
+    // Extend the java.lang.String, giving it the capacity to do sayHi
     implicit def stringExt (n: String): HiString = HiString(n)
 
-    s.HiString
+    // Demo java.lang.String extended with capacity to do sayHi
+    s.sayHi
+
+    // Demo declare an implicit value which can be used 'implicitly' when used a function implicit parameter
+    def repeatSayingHi(times: Int)(implicit hiString: HiString) = {
+        for(i <- 0  to times){
+            hiString.sayHi
+        }
+    }
+
+    implicit val hiString : HiString = HiString("Steve")
+    repeatSayingHi(10)
 }
