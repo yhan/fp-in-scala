@@ -10,13 +10,13 @@ case object Turn extends Input
 case class Machine(locked: Boolean, candies: Int, coins: Int){
     def simulateMachine2(inputs: List[Input]): State[Machine, (Int, Int)] = {
         val last = inputs.foldRight(this)((input, s) => {
-            updat(input, s)
+            update(input, s)
         })
 
         State.unit(last.candies, last.coins)
     }
 
-    def updat(i: Input, s: Machine): Machine = {
+    def update(i: Input, s: Machine): Machine = {
         (i, s) match {
             case (_, Machine(_ /*locked*/ , 0 /*candies*/ , _ /*coins*/)) => s
             case (Coin, Machine(false, _, _)) => {

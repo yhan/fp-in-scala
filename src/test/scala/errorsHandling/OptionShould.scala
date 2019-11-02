@@ -77,6 +77,21 @@ class OptionShould extends FunSuite {
         val abs = option.absolute()
         assertResult(5)(abs.asInstanceOf[Some[Int]].value)
     }
+
+    test("Some(?) can be mapped"){
+        val mapped: Option[String] = Some(42).map(_.toString)
+        assertResult("42")(mapped.getOrElse(""))
+    }
+
+    def mapToString(maybeInt: Option[Int]): Option[String] = {
+        maybeInt.map(_.toString)
+    }
+
+    test("None will be mapped to nothing"){
+        val s: Option[String] = mapToString(None)
+        assertResult(None)(s)
+    }
+
 }
 
 

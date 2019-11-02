@@ -55,6 +55,39 @@ class MiscTests extends FunSuite{
             case _ => false
         }
         assertResult(Vector(false, true))((1 to 2) collect isEven)
+
+    }
+
+//    test("assert training") {
+//        val greeting = "Hi"
+//        greeting shouldEqual ("hi") // Both fail with error message: "[H]i" did not equal "[h]i"
+//    }
+//
+
+//    def returnString(): String = "titi"
+//
+//    def keep(value: Int)(myString: String): String = {
+//        s"$myString $value"
+//    }
+//
+
+//    ignore ("Pipe"){
+//        val result: String = returnString() |> keep(42)
+//        assertResult("titi 42")(result)
+//    }
+
+    test("`equals` yielding false and and `hashcode` comparison yielding true"){
+        val time = new InstantaneousTime {
+            override val repr: Int = 42
+        }
+        val event = new Event {
+            override val name: String = "_"
+            override val repr: Int = 42
+        }
+
+        assertResult(false)(time == event)
+        assertResult(true)(time.## ==  event.##)
+
     }
 
     test("Apply arguments on function") {
